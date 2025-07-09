@@ -1,3 +1,5 @@
+package fr.sanche.tuleapscrapper
+
 case class Project(
     id: String,
     uri: String,

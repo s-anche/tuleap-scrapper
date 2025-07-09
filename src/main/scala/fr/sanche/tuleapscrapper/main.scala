@@ -1,3 +1,5 @@
+package fr.sanche.tuleapscrapper
+
 import cats.effect.{ExitCode, IO, IOApp}
 import io.circe.generic.auto.*
 import io.circe.syntax.*

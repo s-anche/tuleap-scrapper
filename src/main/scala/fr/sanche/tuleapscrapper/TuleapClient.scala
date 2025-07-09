@@ -1,7 +1,9 @@
+package fr.sanche.tuleapscrapper
+
 import cats.effect.{Concurrent, IO, Resource}
 import org.http4s.client.Client
-import org.http4s.{Header, Uri}
 import org.http4s.ember.client.EmberClientBuilder
+import org.http4s.{Header, Uri}
 import org.typelevel.ci.CIString
 
 trait TuleapService:
