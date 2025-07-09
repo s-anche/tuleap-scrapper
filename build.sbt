@@ -11,13 +11,12 @@ val logbackVersion = "1.5.18"
 val slf4jVersion = "2.0.17"
 
 lazy val root = (project in file("."))
-  .enablePlugins(GuardrailPlugin)
   .settings(
     name := "TuleapScrapper",
     libraryDependencies ++= Seq(
       // Cats
       "org.typelevel" %% "cats-core" % "2.13.0",
-      "org.typelevel" %% "cats-effect" % "3.6.1",
+      "org.typelevel" %% "cats-effect" % "3.6.2",
 
       // FS2
       "co.fs2" %% "fs2-core" % fs2Version,
@@ -41,15 +40,5 @@ lazy val root = (project in file("."))
       "ch.qos.logback" % "logback-classic" % logbackVersion % "runtime",
       "ch.qos.logback" % "logback-core" % logbackVersion % "runtime",
       "org.scalatest" %% "scalatest" % "3.2.19" % Test
-    ),
-    Compile / guardrailTasks := (Compile / guardrailDiscoveredOpenApiFiles).value
-      .flatMap { openApiFile =>
-        List(
-          ScalaClient(
-            openApiFile.file,
-            pkg = openApiFile.pkg,
-            framework = "http4s"
-          )
-        )
-      }
+    )
   )

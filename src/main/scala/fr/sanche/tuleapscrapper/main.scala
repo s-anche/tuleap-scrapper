@@ -15,13 +15,6 @@ object MyApp extends IOApp:
         // Récuperer les informations des epics
         // Récuperer les informations des features
         // Récuperer les informations des stories
-        _ <- IO.println(
-          User(
-            "id: String",
-            "uri: String",
-            "displayName: String",
-            "username: String"
-          ).asJson
-        )
+        _ <- IO.println("toto")
         _ <- IO.println("End")
     yield ExitCode.Success
