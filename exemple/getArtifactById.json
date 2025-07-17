@@ -1,0 +1,716 @@
+{
+  "id": 416725,
+  "uri": "artifacts/416725",
+  "xref": "epic #416725",
+  "tracker": {
+    "id": 205,
+    "uri": "trackers/205",
+    "label": "Epics",
+    "color_name": "surf-green",
+    "project": {
+      "id": 128,
+      "uri": "projects/128",
+      "label": "Softway Medical Program",
+      "icon": "🏢"
+    },
+    "cannot_create_reasons": null
+  },
+  "project": {
+    "id": 128,
+    "uri": "projects/128",
+    "label": "Softway Medical Program",
+    "icon": "🏢"
+  },
+  "submitted_by": 210,
+  "submitted_by_user": {
+    "id": 210,
+    "uri": "users/210",
+    "user_url": "/users/wdegryse",
+    "real_name": "DEGRYSE William",
+    "display_name": "DEGRYSE William (wdegryse)",
+    "username": "wdegryse",
+    "ldap_id": "wdegryse",
+    "avatar_url": "https://tuleap-web.swmcloud.net/users/wdegryse/avatar-a010a23522629057e9b53234d760915e029318f70a062824d55e788926eb16bc.png",
+    "is_anonymous": false,
+    "has_avatar": true
+  },
+  "submitted_on": "2024-10-11T09:38:52+02:00",
+  "html_url": "/plugins/tracker/?aid=416725",
+  "changesets_uri": "artifacts/416725/changesets",
+  "values": [
+    {
+      "field_id": 5685,
+      "label": "Links",
+      "type": "art_link",
+      "links": [
+        {
+          "id": 541832,
+          "uri": "artifacts/541832",
+          "tracker": {
+            "id": 643,
+            "uri": "trackers/643",
+            "label": "User Stories",
+            "color": "deep-blue",
+            "project": {
+              "id": 178,
+              "uri": "projects/178",
+              "label": "ITO - MosqITO",
+              "icon": "🧩"
+            }
+          },
+          "type": "_is_child"
+        },
+        {
+          "id": 512430,
+          "uri": "artifacts/512430",
+          "tracker": {
+            "id": 643,
+            "uri": "trackers/643",
+            "label": "User Stories",
+            "color": "deep-blue",
+            "project": {
+              "id": 178,
+              "uri": "projects/178",
+              "label": "ITO - MosqITO",
+              "icon": "🧩"
+            }
+          },
+          "type": "_is_child"
+        },
+        {
+          "id": 520895,
+          "uri": "artifacts/520895",
+          "tracker": {
+            "id": 642,
+            "uri": "trackers/642",
+            "label": "Tasks",
+            "color": "graffiti-yellow",
+            "project": {
+              "id": 178,
+              "uri": "projects/178",
+              "label": "ITO - MosqITO",
+              "icon": "🧩"
+            }
+          },
+          "type": "_is_child"
+        },
+        {
+          "id": 519518,
+          "uri": "artifacts/519518",
+          "tracker": {
+            "id": 643,
+            "uri": "trackers/643",
+            "label": "User Stories",
+            "color": "deep-blue",
+            "project": {
+              "id": 178,
+              "uri": "projects/178",
+              "label": "ITO - MosqITO",
+              "icon": "🧩"
+            }
+          },
+          "type": "_is_child"
+        },
+        {
+          "id": 433259,
+          "uri": "artifacts/433259",
+          "tracker": {
+            "id": 643,
+            "uri": "trackers/643",
+            "label": "User Stories",
+            "color": "deep-blue",
+            "project": {
+              "id": 178,
+              "uri": "projects/178",
+              "label": "ITO - MosqITO",
+              "icon": "🧩"
+            }
+          },
+          "type": "_is_child"
+        },
+        {
+          "id": 519077,
+          "uri": "artifacts/519077",
+          "tracker": {
+            "id": 643,
+            "uri": "trackers/643",
+            "label": "User Stories",
+            "color": "deep-blue",
+            "project": {
+              "id": 178,
+              "uri": "projects/178",
+              "label": "ITO - MosqITO",
+              "icon": "🧩"
+            }
+          },
+          "type": "_is_child"
+        },
+        {
+          "id": 501327,
+          "uri": "artifacts/501327",
+          "tracker": {
+            "id": 643,
+            "uri": "trackers/643",
+            "label": "User Stories",
+            "color": "deep-blue",
+            "project": {
+              "id": 178,
+              "uri": "projects/178",
+              "label": "ITO - MosqITO",
+              "icon": "🧩"
+            }
+          },
+          "type": "_is_child"
+        },
+        {
+          "id": 433254,
+          "uri": "artifacts/433254",
+          "tracker": {
+            "id": 643,
+            "uri": "trackers/643",
+            "label": "User Stories",
+            "color": "deep-blue",
+            "project": {
+              "id": 178,
+              "uri": "projects/178",
+              "label": "ITO - MosqITO",
+              "icon": "🧩"
+            }
+          },
+          "type": "_is_child"
+        },
+        {
+          "id": 519511,
+          "uri": "artifacts/519511",
+          "tracker": {
+            "id": 643,
+            "uri": "trackers/643",
+            "label": "User Stories",
+            "color": "deep-blue",
+            "project": {
+              "id": 178,
+              "uri": "projects/178",
+              "label": "ITO - MosqITO",
+              "icon": "🧩"
+            }
+          },
+          "type": "_is_child"
+        },
+        {
+          "id": 493064,
+          "uri": "artifacts/493064",
+          "tracker": {
+            "id": 642,
+            "uri": "trackers/642",
+            "label": "Tasks",
+            "color": "graffiti-yellow",
+            "project": {
+              "id": 178,
+              "uri": "projects/178",
+              "label": "ITO - MosqITO",
+              "icon": "🧩"
+            }
+          },
+          "type": "_is_child"
+        },
+        {
+          "id": 474526,
+          "uri": "artifacts/474526",
+          "tracker": {
+            "id": 642,
+            "uri": "trackers/642",
+            "label": "Tasks",
+            "color": "graffiti-yellow",
+            "project": {
+              "id": 178,
+              "uri": "projects/178",
+              "label": "ITO - MosqITO",
+              "icon": "🧩"
+            }
+          },
+          "type": "_is_child"
+        },
+        {
+          "id": 444087,
+          "uri": "artifacts/444087",
+          "tracker": {
+            "id": 639,
+            "uri": "trackers/639",
+            "label": "Features",
+            "color": "ocean-turquoise",
+            "project": {
+              "id": 178,
+              "uri": "projects/178",
+              "label": "ITO - MosqITO",
+              "icon": "🧩"
+            }
+          },
+          "type": "_is_child"
+        },
+        {
+          "id": 536631,
+          "uri": "artifacts/536631",
+          "tracker": {
+            "id": 642,
+            "uri": "trackers/642",
+            "label": "Tasks",
+            "color": "graffiti-yellow",
+            "project": {
+              "id": 178,
+              "uri": "projects/178",
+              "label": "ITO - MosqITO",
+              "icon": "🧩"
+            }
+          },
+          "type": "_is_child"
+        },
+        {
+          "id": 538802,
+          "uri": "artifacts/538802",
+          "tracker": {
+            "id": 638,
+            "uri": "trackers/638",
+            "label": "Defects",
+            "color": "fiesta-red",
+            "project": {
+              "id": 178,
+              "uri": "projects/178",
+              "label": "ITO - MosqITO",
+              "icon": "🧩"
+            }
+          },
+          "type": "_is_child"
+        }
+      ],
+      "reverse_links": [
+        {
+          "id": 302803,
+          "uri": "artifacts/302803",
+          "tracker": {
+            "id": 206,
+            "uri": "trackers/206",
+            "label": "Strategic axes",
+            "color": "deep-blue",
+            "project": {
+              "id": 128,
+              "uri": "projects/128",
+              "label": "Softway Medical Program",
+              "icon": "🏢"
+            }
+          },
+          "type": "_is_child"
+        }
+      ]
+    },
+    {
+      "field_id": 52936,
+      "label": "New micro service",
+      "type": "cb",
+      "values": [],
+      "bind_value_ids": []
+    },
+    {
+      "field_id": 52940,
+      "label": "Chargeable feature",
+      "type": "cb",
+      "values": [],
+      "bind_value_ids": []
+    },
+    {
+      "field_id": 58738,
+      "label": "Forecast Estimated Costs",
+      "type": "cb",
+      "values": [],
+      "bind_value_ids": []
+    },
+    {
+      "field_id": 58739,
+      "label": "First Estimated Costs",
+      "type": "cb",
+      "values": [],
+      "bind_value_ids": []
+    },
+    {
+      "field_id": 5678,
+      "type": "aid",
+      "label": "Artifact ID",
+      "value": 416725
+    },
+    {
+      "field_id": 91776,
+      "label": "SmartSheet ID",
+      "bind_value_objects": [],
+      "bind_value_ids": [],
+      "bind_type": "static",
+      "type": "tbl"
+    },
+    {
+      "field_id": 5681,
+      "type": "lud",
+      "label": "Last Update On",
+      "value": "2025-07-11T09:55:34+02:00"
+    },
+    {
+      "field_id": 5697,
+      "type": "string",
+      "label": "Epic Summary",
+      "value": "[SEGUR V2 DPI] Homologation simplifiée DMP 2.9"
+    },
+    {
+      "field_id": 5686,
+      "type": "cross",
+      "label": "References",
+      "value": [
+        {
+          "ref": "features #444087",
+          "url": "https://tuleap-web.swmcloud.net/goto?key=features&val=444087&group_id=178",
+          "direction": "out"
+        },
+        {
+          "ref": "task #474526",
+          "url": "https://tuleap-web.swmcloud.net/goto?key=task&val=474526&group_id=178",
+          "direction": "out"
+        },
+        {
+          "ref": "task #493064",
+          "url": "https://tuleap-web.swmcloud.net/goto?key=task&val=493064&group_id=178",
+          "direction": "out"
+        },
+        {
+          "ref": "story #501327",
+          "url": "https://tuleap-web.swmcloud.net/goto?key=story&val=501327&group_id=178",
+          "direction": "out"
+        },
+        {
+          "ref": "story #433259",
+          "url": "https://tuleap-web.swmcloud.net/goto?key=story&val=433259&group_id=178",
+          "direction": "out"
+        },
+        {
+          "ref": "story #512430",
+          "url": "https://tuleap-web.swmcloud.net/goto?key=story&val=512430&group_id=178",
+          "direction": "out"
+        },
+        {
+          "ref": "story #519077",
+          "url": "https://tuleap-web.swmcloud.net/goto?key=story&val=519077&group_id=178",
+          "direction": "out"
+        },
+        {
+          "ref": "story #519511",
+          "url": "https://tuleap-web.swmcloud.net/goto?key=story&val=519511&group_id=178",
+          "direction": "out"
+        },
+        {
+          "ref": "story #519518",
+          "url": "https://tuleap-web.swmcloud.net/goto?key=story&val=519518&group_id=178",
+          "direction": "out"
+        },
+        {
+          "ref": "task #520895",
+          "url": "https://tuleap-web.swmcloud.net/goto?key=task&val=520895&group_id=178",
+          "direction": "out"
+        },
+        {
+          "ref": "task #536631",
+          "url": "https://tuleap-web.swmcloud.net/goto?key=task&val=536631&group_id=178",
+          "direction": "out"
+        },
+        {
+          "ref": "story #433254",
+          "url": "https://tuleap-web.swmcloud.net/goto?key=story&val=433254&group_id=178",
+          "direction": "out"
+        },
+        {
+          "ref": "defect #538802",
+          "url": "https://tuleap-web.swmcloud.net/goto?key=defect&val=538802&group_id=178",
+          "direction": "out"
+        },
+        {
+          "ref": "story #541832",
+          "url": "https://tuleap-web.swmcloud.net/goto?key=story&val=541832&group_id=178",
+          "direction": "out"
+        },
+        {
+          "ref": "axe #302803",
+          "url": "https://tuleap-web.swmcloud.net/goto?key=axe&val=302803&group_id=128",
+          "direction": "in"
+        }
+      ]
+    },
+    {
+      "field_id": 5682,
+      "type": "luby",
+      "label": "Last Update By",
+      "value": {
+        "id": 698,
+        "uri": "users/698",
+        "user_url": "/users/cgallaud",
+        "real_name": "GALLAUD Carole",
+        "display_name": "GALLAUD Carole (cgallaud)",
+        "username": "cgallaud",
+        "ldap_id": "cgallaud",
+        "avatar_url": "https://tuleap-web.swmcloud.net/users/cgallaud/avatar-fc3cbcc0b1aa974784e972a2aa7e1c5cdac39acaeac23ee4a9138c65da7c7605.png",
+        "is_anonymous": false,
+        "has_avatar": true,
+        "email": "cgallaud@softwaymedical.fr",
+        "status": "A"
+      }
+    },
+    {
+      "field_id": 5679,
+      "type": "subon",
+      "label": "Submitted on",
+      "value": "2024-10-11T09:38:52+02:00"
+    },
+    {
+      "field_id": 5680,
+      "type": "subby",
+      "label": "Submitted by",
+      "value": {
+        "id": 210,
+        "uri": "users/210",
+        "user_url": "/users/wdegryse",
+        "real_name": "DEGRYSE William",
+        "display_name": "DEGRYSE William (wdegryse)",
+        "username": "wdegryse",
+        "ldap_id": "wdegryse",
+        "avatar_url": "https://tuleap-web.swmcloud.net/users/wdegryse/avatar-a010a23522629057e9b53234d760915e029318f70a062824d55e788926eb16bc.png",
+        "is_anonymous": false,
+        "has_avatar": true,
+        "email": "wdegryse@softwaymedical.fr",
+        "status": "A"
+      }
+    },
+    {
+      "field_id": 5688,
+      "type": "computed",
+      "label": "Total Remaining Effort",
+      "is_autocomputed": true,
+      "value": 5,
+      "manual_value": null
+    },
+    {
+      "field_id": 91777,
+      "label": "Météo",
+      "type": "sb",
+      "values": [],
+      "bind_value_ids": []
+    },
+    {
+      "field_id": 5691,
+      "label": "Status",
+      "type": "sb",
+      "values": [
+        {
+          "id": 5199,
+          "label": "Development in progress",
+          "color": null,
+          "tlp_color": "graffiti-yellow",
+          "is_hidden": false
+        }
+      ],
+      "bind_value_ids": [5199]
+    },
+    {
+      "field_id": 5698,
+      "type": "text",
+      "label": "Description",
+      "value": "<p>Homologation simplifiée DMP 2.9 afin d'inclure:</p>\n<ul>\n<li>L'implémentation des transactions TD3.3a, TD3.3b et TD3.3d considérées comme obligatoires pour la vague 2 du SEGUR (validé par JMC)</li>\n<li>La mise à jour de la popup d'autorisation de consultation</li>\n</ul>\n",
+      "format": "html",
+      "commonmark": "Homologation simplifiée DMP 2.9 afin d'inclure:  \r\n- L'implémentation des transactions TD3.3a, TD3.3b et TD3.3d considérées comme obligatoires pour la vague 2 du SEGUR (validé par JMC)  \r\n- La mise à jour de la popup d'autorisation de consultation  ",
+      "post_processed_value": "<p>Homologation simplifiée DMP 2.9 afin d'inclure:</p>\n<ul>\n<li>L'implémentation des transactions TD3.3a, TD3.3b et TD3.3d considérées comme obligatoires pour la vague 2 du SEGUR (validé par JMC)</li>\n<li>La mise à jour de la popup d'autorisation de consultation</li>\n</ul>\n"
+    },
+    {
+      "field_id": 86760,
+      "label": "Expected end dev date",
+      "value": "2025-06-18T00:00:00+02:00",
+      "type": "date",
+      "is_time_displayed": false
+    },
+    {
+      "field_id": 5687,
+      "type": "computed",
+      "label": "Total Initial Effort",
+      "is_autocomputed": true,
+      "value": 116,
+      "manual_value": null
+    },
+    {
+      "field_id": 26502,
+      "label": "🏁 Real end dev date",
+      "value": "2025-06-18T00:00:00+02:00",
+      "type": "date",
+      "is_time_displayed": false
+    },
+    {
+      "field_id": 93304,
+      "label": "Expected start dev date",
+      "value": "2025-03-10T00:00:00+01:00",
+      "type": "date",
+      "is_time_displayed": false
+    },
+    {
+      "field_id": 5699,
+      "label": "Attachments",
+      "type": "file",
+      "file_descriptions": []
+    },
+    {
+      "field_id": 5689,
+      "label": "▶ Real start dev date ",
+      "value": "2025-03-10T00:00:00+01:00",
+      "type": "date",
+      "is_time_displayed": false
+    },
+    {
+      "field_id": 93305,
+      "label": "Last dev done",
+      "value": null,
+      "type": "date",
+      "is_time_displayed": false
+    },
+    {
+      "field_id": 93306,
+      "label": "First dev implemented",
+      "value": null,
+      "type": "date",
+      "is_time_displayed": false
+    },
+    {
+      "field_id": 12960,
+      "type": "computed",
+      "label": "Equivalence in days",
+      "is_autocomputed": true,
+      "value": 210.41,
+      "manual_value": null
+    },
+    {
+      "field_id": 5690,
+      "label": "Done date",
+      "value": null,
+      "type": "date",
+      "is_time_displayed": false
+    },
+    {
+      "field_id": 5692,
+      "label": "Indicator",
+      "type": "sb",
+      "values": [],
+      "bind_value_ids": []
+    },
+    {
+      "field_id": 14386,
+      "label": "Lead Team",
+      "type": "sb",
+      "values": [
+        {
+          "id": 63532,
+          "label": "🧩 Tribu ITO",
+          "color": null,
+          "tlp_color": null,
+          "is_hidden": false
+        }
+      ],
+      "bind_value_ids": [63532]
+    },
+    {
+      "field_id": 5693,
+      "label": "Linked teams",
+      "type": "msb",
+      "values": [
+        {
+          "id": 6009,
+          "label": "☢ RIS - Administratif patient",
+          "color": null,
+          "tlp_color": "sherwood-green",
+          "is_hidden": false
+        }
+      ],
+      "bind_value_ids": [6009]
+    },
+    {
+      "field_id": 5694,
+      "label": "Tags",
+      "bind_value_objects": [
+        {
+          "id": "o123",
+          "label": "SEGUR V2"
+        },
+        {
+          "id": 624759,
+          "label": "pas de communication client",
+          "color": null,
+          "tlp_color": "fiesta-red",
+          "is_hidden": false
+        }
+      ],
+      "bind_value_ids": ["SEGUR V2", "pas de communication client"],
+      "bind_type": "static",
+      "type": "tbl"
+    },
+    {
+      "field_id": 52935,
+      "label": "Clients pilot",
+      "type": "msb",
+      "values": [],
+      "bind_value_ids": []
+    }
+  ],
+  "values_by_field": {
+    "artifact_id": {
+      "field_id": 5678,
+      "type": "aid",
+      "label": "Artifact ID",
+      "value": 416725
+    },
+    "epic": {
+      "field_id": 5697,
+      "type": "string",
+      "label": "Epic Summary",
+      "value": "[SEGUR V2 DPI] Homologation simplifiée DMP 2.9"
+    },
+    "remaining_effort": {
+      "field_id": 5688,
+      "type": "computed",
+      "label": "Total Remaining Effort",
+      "is_autocomputed": true,
+      "value": 5,
+      "manual_value": null
+    },
+    "description": {
+      "field_id": 5698,
+      "type": "text",
+      "label": "Description",
+      "value": "<p>Homologation simplifiée DMP 2.9 afin d'inclure:</p>\n<ul>\n<li>L'implémentation des transactions TD3.3a, TD3.3b et TD3.3d considérées comme obligatoires pour la vague 2 du SEGUR (validé par JMC)</li>\n<li>La mise à jour de la popup d'autorisation de consultation</li>\n</ul>\n",
+      "format": "html",
+      "commonmark": "Homologation simplifiée DMP 2.9 afin d'inclure:  \r\n- L'implémentation des transactions TD3.3a, TD3.3b et TD3.3d considérées comme obligatoires pour la vague 2 du SEGUR (validé par JMC)  \r\n- La mise à jour de la popup d'autorisation de consultation  ",
+      "post_processed_value": "<p>Homologation simplifiée DMP 2.9 afin d'inclure:</p>\n<ul>\n<li>L'implémentation des transactions TD3.3a, TD3.3b et TD3.3d considérées comme obligatoires pour la vague 2 du SEGUR (validé par JMC)</li>\n<li>La mise à jour de la popup d'autorisation de consultation</li>\n</ul>\n"
+    },
+    "capacity": {
+      "field_id": 5687,
+      "type": "computed",
+      "label": "Total Initial Effort",
+      "is_autocomputed": true,
+      "value": 116,
+      "manual_value": null
+    },
+    "eq_days": {
+      "field_id": 12960,
+      "type": "computed",
+      "label": "Equivalence in days",
+      "is_autocomputed": true,
+      "value": 210.41,
+      "manual_value": null
+    }
+  },
+  "last_modified_date": "2025-07-11T09:55:34+02:00",
+  "status": "Development in progress",
+  "full_status": {
+    "value": "Development in progress",
+    "color": "graffiti-yellow"
+  },
+  "is_open": true,
+  "title": "[SEGUR V2 DPI] Homologation simplifiée DMP 2.9",
+  "assignees": []
+}

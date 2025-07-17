@@ -12,9 +12,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Give project leads and developers a clean, real-time interface to:
 
-- Select a team and one or more projects.
-- Filter on active epics.
-- View associated features and stories in a hierarchical list.
+- Select Epics.
+- Display all relatives Artifacts such as feature, story or task.
 - Visualize delivery pace with a burn-up chart.
 - Pilot projects without relying on cluttered dashboards or complex queries in Tulip.
 

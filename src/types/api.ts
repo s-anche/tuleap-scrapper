@@ -126,3 +126,135 @@ export enum ArtifactType {
   Task = 'task',
   Story = 'story'
 }
+
+export interface TuleapArtifactLink {
+  id: number
+  uri: string
+  tracker: {
+    id: number
+    uri: string
+    label: string
+    color: string
+    project: {
+      id: number
+      uri: string
+      label: string
+      icon: string
+    }
+  }
+  type: string
+}
+
+export interface TuleapArtifactValue {
+  field_id: number
+  label: string
+  type: string
+  value?: any
+  values?: any[]
+  links?: TuleapArtifactLink[]
+  reverse_links?: TuleapArtifactLink[]
+  bind_value_ids?: any[]
+  bind_value_objects?: any[]
+  format?: string
+  commonmark?: string
+  post_processed_value?: any
+  is_autocomputed?: boolean
+  manual_value?: any
+  is_time_displayed?: boolean
+  file_descriptions?: any[]
+}
+
+export interface TuleapArtifact {
+  id: number
+  uri: string
+  xref: string
+  tracker: {
+    id: number
+    uri: string
+    label: string
+    color_name: string
+    project: {
+      id: number
+      uri: string
+      label: string
+      icon: string
+    }
+    cannot_create_reasons?: string[]
+  }
+  project: {
+    id: number
+    uri: string
+    label: string
+    icon: string
+  }
+  submitted_by: number
+  submitted_by_user: {
+    id: number
+    uri: string
+    user_url: string
+    real_name: string
+    display_name: string
+    username: string
+    ldap_id: string
+    avatar_url: string
+    is_anonymous: boolean
+    has_avatar: boolean
+    email?: string
+    status?: string
+  }
+  submitted_on: string
+  html_url: string
+  changesets_uri: string
+  values: TuleapArtifactValue[]
+  values_by_field: {
+    [key: string]: TuleapArtifactValue
+  }
+  last_modified_date: string
+  status: string
+  full_status: {
+    value: string
+    color: string
+  }
+  is_open: boolean
+  title: string
+  assignees: any[]
+}
+
+export interface Epic {
+  id: number
+  title: string
+  status: string
+  summary?: string
+  leadTeam?: string
+  estimation?: number
+  remainingEffort?: number
+  lastUpdateDate: string
+  htmlUrl: string
+  project: {
+    id: number
+    label: string
+    icon?: string
+  }
+  tracker: {
+    id: number
+    label: string
+    color?: string
+  }
+  submittedBy?: {
+    id: number
+    name: string
+    username: string
+    avatar_url?: string
+  }
+  links?: {
+    features: TuleapArtifactLink[]
+    stories: TuleapArtifactLink[]
+    tasks: TuleapArtifactLink[]
+    defects: TuleapArtifactLink[]
+  }
+  tags?: string[]
+  expectedEndDate?: string
+  realEndDate?: string
+  expectedStartDate?: string
+  realStartDate?: string
+}
