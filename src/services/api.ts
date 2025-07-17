@@ -204,6 +204,23 @@ export const apiService = {
     return storyArtifacts.slice(params.offset || 0, (params.offset || 0) + (params.limit || 100))
   },
 
+  // Helper method to build correct Tuleap URL
+  buildTuleapUrl(htmlUrl: string | undefined, artifactId: number): string {
+    const baseUrl = 'https://tuleap-web.swmcloud.net'
+    
+    if (htmlUrl) {
+      // If it's already a complete URL, use it
+      if (htmlUrl.startsWith('http')) {
+        return htmlUrl
+      }
+      // If it's a relative URL, prepend the base URL
+      return `${baseUrl}${htmlUrl}`
+    }
+    
+    // Fallback to the standard tracker URL format
+    return `${baseUrl}/plugins/tracker/?aid=${artifactId}`
+  },
+
   // Epic-specific methods
   async getEpicById(id: number): Promise<Epic> {
     try {
@@ -293,7 +310,7 @@ export const apiService = {
       estimation: artifact.values_by_field?.capacity?.value || getFieldValue(5687),
       remainingEffort: artifact.values_by_field?.remaining_effort?.value || getFieldValue(5688),
       lastUpdateDate: artifact.last_modified_date,
-      htmlUrl: artifact.html_url || `https://tuleap-web.swmcloud.net/plugins/tracker/?aid=${artifact.id}`,
+      htmlUrl: this.buildTuleapUrl(artifact.html_url, artifact.id),
       project: {
         id: artifact.project.id,
         label: artifact.project.label,
