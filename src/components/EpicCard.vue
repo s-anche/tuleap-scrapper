@@ -23,9 +23,6 @@ const statusColor = computed(() => {
   }
 })
 
-const stripHtml = (html: string) => {
-  return html.replace(/<[^>]*>/g, '').trim()
-}
 
 const formatDate = (dateString: string) => {
   return new Date(dateString).toLocaleDateString()
@@ -45,6 +42,7 @@ const relatedArtifactsCount = computed(() => {
     class="epic-card h-100"
     elevation="2"
     hover
+    :to="{ name: 'epic-detail', params: { id: epic.id } }"
   >
     <!-- Header with Status and ID -->
     <v-card-title class="d-flex align-center pa-4 pb-2">
@@ -170,6 +168,7 @@ const relatedArtifactsCount = computed(() => {
             variant="text"
             size="small"
             color="primary"
+            @click.stop
           >
             <v-icon left>mdi-information-outline</v-icon>
             Summary
@@ -177,7 +176,7 @@ const relatedArtifactsCount = computed(() => {
         </template>
         <div class="pa-3">
           <div class="text-subtitle-2 mb-2">Epic Summary</div>
-          <div class="text-body-2">{{ stripHtml(epic.summary) }}</div>
+          <div class="text-body-2 summary-tooltip" v-html="epic.summary"></div>
         </div>
       </v-tooltip>
       
@@ -190,6 +189,7 @@ const relatedArtifactsCount = computed(() => {
         target="_blank"
         rel="noopener noreferrer"
         color="primary"
+        @click.stop
       >
         <v-icon left>mdi-open-in-new</v-icon>
         View in Tuleap
@@ -203,11 +203,16 @@ const relatedArtifactsCount = computed(() => {
   transition: all 0.2s ease-in-out;
   display: flex;
   flex-direction: column;
+  cursor: pointer;
 }
 
 .epic-card:hover {
   transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+}
+
+.epic-card:active {
+  transform: translateY(0px);
 }
 
 .info-section {
@@ -242,5 +247,34 @@ const relatedArtifactsCount = computed(() => {
   .epic-card .v-card-title > div {
     margin-bottom: 8px;
   }
+}
+
+.summary-tooltip {
+  max-width: 500px;
+  max-height: 200px;
+  overflow-y: auto;
+  line-height: 1.4;
+}
+
+.summary-tooltip :deep(ul),
+.summary-tooltip :deep(ol) {
+  margin: 8px 0;
+  padding-left: 20px;
+}
+
+.summary-tooltip :deep(li) {
+  margin: 4px 0;
+}
+
+.summary-tooltip :deep(p) {
+  margin: 8px 0;
+}
+
+.summary-tooltip :deep(strong) {
+  font-weight: 600;
+}
+
+.summary-tooltip :deep(em) {
+  font-style: italic;
 }
 </style>

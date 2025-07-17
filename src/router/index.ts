@@ -90,6 +90,19 @@ const router = createRouter({
       },
     },
     {
+      path: '/epic/:id',
+      name: 'epic-detail',
+      component: () => import('../views/EpicDetailView.vue'),
+      meta: { 
+        requiresAuth: true,
+        title: 'Epic Detail',
+        breadcrumbs: [
+          { title: 'Home', disabled: false, to: '/' },
+          { title: 'Epic Detail', disabled: true }
+        ]
+      },
+    },
+    {
       path: '/about',
       name: 'about',
       component: () => import('../views/AboutView.vue'),

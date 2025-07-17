@@ -12,16 +12,6 @@ import type {
   TrackerQuery, 
   ArtifactQuery 
 } from '@/types/api'
-import {
-  mockProjects,
-  mockTrackers,
-  mockArtifacts,
-  getProjectById,
-  getTrackersByProjectId,
-  getArtifactsByTrackerId,
-  searchProjects,
-  searchArtifacts
-} from '@/data/mockData'
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || 'https://tuleap-web.swmcloud.net/api',
@@ -56,152 +46,47 @@ api.interceptors.response.use(
   }
 )
 
-// Mock API Service Methods
+// Real API Service Methods
 export const apiService = {
   // Projects
   async getProjects(params: QueryParams & { query?: ProjectQuery } = {}): Promise<Project[]> {
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 300))
-    
-    const { query, limit = 50, offset = 0 } = params
-    let projects = mockProjects
-    
-    // Apply query filters
-    if (query?.shortname) {
-      projects = searchProjects(query.shortname)
-    }
-    if (query?.is_member_of) {
-      // For mock, assume all projects are accessible
-      projects = mockProjects
-    }
-    if (query?.is_admin_of) {
-      // For mock, assume user is admin of first 2 projects
-      projects = mockProjects.slice(0, 2)
-    }
-    
-    // Apply pagination
-    return projects.slice(offset, offset + limit)
+    const response = await api.get('/projects', { params })
+    return response.data.collection || []
   },
 
   async getProject(id: number): Promise<Project> {
-    await new Promise(resolve => setTimeout(resolve, 200))
-    const project = getProjectById(id)
-    if (!project) {
-      throw new Error(`Project with id ${id} not found`)
-    }
-    return project
+    const response = await api.get(`/projects/${id}`)
+    return response.data
   },
 
   // Trackers
   async getProjectTrackers(projectId: number, params: QueryParams & { query?: TrackerQuery } = {}): Promise<Tracker[]> {
-    await new Promise(resolve => setTimeout(resolve, 250))
-    
-    const { limit = 50, offset = 0 } = params
-    const trackers = getTrackersByProjectId(projectId)
-    
-    // Apply pagination
-    return trackers.slice(offset, offset + limit)
+    const response = await api.get(`/projects/${projectId}/trackers`, { params })
+    return response.data.collection || []
   },
 
   async getTracker(id: number): Promise<Tracker> {
-    await new Promise(resolve => setTimeout(resolve, 200))
-    const tracker = mockTrackers.find(t => t.id === id)
-    if (!tracker) {
-      throw new Error(`Tracker with id ${id} not found`)
-    }
-    return tracker
+    const response = await api.get(`/trackers/${id}`)
+    return response.data
   },
 
   // Artifacts
   async getTrackerArtifacts(trackerId: number, params: QueryParams & { query?: ArtifactQuery } = {}): Promise<Artifact[]> {
-    await new Promise(resolve => setTimeout(resolve, 400))
-    
-    const { query, limit = 100, offset = 0 } = params
-    let artifacts = getArtifactsByTrackerId(trackerId)
-    
-    // Apply search query
-    if (query?.title && typeof query.title === 'string') {
-      artifacts = searchArtifacts(query.title, trackerId)
-    }
-    
-    // Apply status filter
-    if (query?.status) {
-      artifacts = artifacts.filter(artifact => 
-        artifact.status?.toLowerCase() === query.status.toLowerCase()
-      )
-    }
-    
-    // Apply pagination
-    return artifacts.slice(offset, offset + limit)
+    const response = await api.get(`/trackers/${trackerId}/artifacts`, { params })
+    return response.data.collection || []
   },
 
   async getArtifact(id: number, params: QueryParams = {}): Promise<Artifact> {
-    await new Promise(resolve => setTimeout(resolve, 200))
-    const artifact = mockArtifacts.find(a => a.id === id)
-    if (!artifact) {
-      throw new Error(`Artifact with id ${id} not found`)
-    }
-    return artifact
+    const response = await api.get(`/artifacts/${id}`, { params })
+    return response.data
   },
 
   async getArtifacts(ids: number[], params: QueryParams = {}): Promise<Artifact[]> {
-    await new Promise(resolve => setTimeout(resolve, 300))
-    const { limit = 100, offset = 0 } = params
-    
-    const artifacts = mockArtifacts.filter(artifact => ids.includes(artifact.id))
-    return artifacts.slice(offset, offset + limit)
-  },
-
-  async getUserArtifacts(userId: string = 'self', query: string, params: QueryParams = {}): Promise<Artifact[]> {
-    await new Promise(resolve => setTimeout(resolve, 350))
-    const { limit = 100, offset = 0 } = params
-    
-    // For mock, return all artifacts assigned to user
-    const userArtifacts = mockArtifacts.filter(artifact => 
-      artifact.values?.some(value => 
-        value.label.toLowerCase().includes('assigned') && 
-        String(value.value).toLowerCase().includes('user')
-      )
-    )
-    
-    return userArtifacts.slice(offset, offset + limit)
-  },
-
-  // Helper methods for specific artifact types
-  async getEpics(trackerId: number, params: QueryParams = {}): Promise<Artifact[]> {
-    await new Promise(resolve => setTimeout(resolve, 300))
-    const epicTrackers = mockTrackers.filter(t => t.label.includes('Epic'))
-    const epicArtifacts = mockArtifacts.filter(artifact => 
-      epicTrackers.some(tracker => tracker.id === artifact.tracker.id)
-    )
-    return epicArtifacts.slice(params.offset || 0, (params.offset || 0) + (params.limit || 100))
-  },
-
-  async getFeatures(trackerId: number, params: QueryParams = {}): Promise<Artifact[]> {
-    await new Promise(resolve => setTimeout(resolve, 300))
-    const featureTrackers = mockTrackers.filter(t => t.label.includes('Feature'))
-    const featureArtifacts = mockArtifacts.filter(artifact => 
-      featureTrackers.some(tracker => tracker.id === artifact.tracker.id)
-    )
-    return featureArtifacts.slice(params.offset || 0, (params.offset || 0) + (params.limit || 100))
-  },
-
-  async getTasks(trackerId: number, params: QueryParams = {}): Promise<Artifact[]> {
-    await new Promise(resolve => setTimeout(resolve, 300))
-    const taskTrackers = mockTrackers.filter(t => t.label.includes('Task'))
-    const taskArtifacts = mockArtifacts.filter(artifact => 
-      taskTrackers.some(tracker => tracker.id === artifact.tracker.id)
-    )
-    return taskArtifacts.slice(params.offset || 0, (params.offset || 0) + (params.limit || 100))
-  },
-
-  async getStories(trackerId: number, params: QueryParams = {}): Promise<Artifact[]> {
-    await new Promise(resolve => setTimeout(resolve, 300))
-    const storyTrackers = mockTrackers.filter(t => t.label.includes('Stories'))
-    const storyArtifacts = mockArtifacts.filter(artifact => 
-      storyTrackers.some(tracker => tracker.id === artifact.tracker.id)
-    )
-    return storyArtifacts.slice(params.offset || 0, (params.offset || 0) + (params.limit || 100))
+    const promises = ids.map(id => api.get(`/artifacts/${id}`, { params }))
+    const responses = await Promise.allSettled(promises)
+    return responses
+      .filter(response => response.status === 'fulfilled')
+      .map(response => (response as PromiseFulfilledResult<{ data: Artifact }>).value.data)
   },
 
   // Helper method to build correct Tuleap URL
@@ -226,28 +111,26 @@ export const apiService = {
     try {
       const response = await api.get(`/artifacts/${id}`)
       return this.transformArtifactToEpic(response.data)
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error(`Error fetching epic ${id}:`, error)
       
       // If it's a 404, throw a more specific error
-      if (error.response?.status === 404) {
+      if ((error as any).response?.status === 404) {
         throw new Error(`Epic #${id} not found`)
       }
       
       // If it's an auth error, throw a more specific error  
-      if (error.response?.status === 401) {
+      if ((error as any).response?.status === 401) {
         throw new Error('Authentication failed. Please check your API token.')
       }
       
       // If it's a network error, throw a more specific error
-      if (!error.response) {
+      if (!(error as any).response) {
         throw new Error('Network error. Please check your connection.')
       }
       
-      // For other errors, use the mock data as fallback for development
-      console.warn(`Using mock data for epic ${id} due to API error`)
-      const mockEpic = this.createMockEpic(id)
-      return mockEpic
+      // For other errors, throw a generic error
+      throw new Error(`Failed to fetch epic #${id}. Please check your connection and try again.`)
     }
   },
 
@@ -303,9 +186,11 @@ export const apiService = {
       id: artifact.id,
       title: artifact.title || getFieldValue(5697) || `Epic #${artifact.id}`,
       status: artifact.status || artifact.full_status?.value || 'Unknown',
-      summary: artifact.values_by_field?.description?.value || 
-               artifact.values_by_field?.description?.commonmark || 
-               getFieldByLabel('Description'),
+      summary: this.decodeHtmlEntities(
+        artifact.values_by_field?.description?.value || 
+        artifact.values_by_field?.description?.commonmark || 
+        getFieldByLabel('Description') || ''
+      ),
       leadTeam: getFieldByLabel('Lead Team'),
       estimation: artifact.values_by_field?.capacity?.value || getFieldValue(5687),
       remainingEffort: artifact.values_by_field?.remaining_effort?.value || getFieldValue(5688),
@@ -336,88 +221,94 @@ export const apiService = {
     }
   },
 
-  createMockEpic(id: number): Epic {
-    const mockEpics: Epic[] = [
-      {
-        id: 416725,
-        title: '[SEGUR V2 DPI] Homologation simplifiée DMP 2.9',
-        status: 'Development in progress',
-        summary: 'Homologation simplifiée DMP 2.9 afin d\'inclure: L\'implémentation des transactions TD3.3a, TD3.3b et TD3.3d considérées comme obligatoires pour la vague 2 du SEGUR (validé par JMC), La mise à jour de la popup d\'autorisation de consultation',
-        leadTeam: '🧩 Tribu ITO',
-        estimation: 116,
-        remainingEffort: 5,
-        lastUpdateDate: '2025-07-11T09:55:34+02:00',
-        htmlUrl: 'https://tuleap-web.swmcloud.net/plugins/tracker/?aid=416725',
-        project: {
-          id: 128,
-          label: 'Softway Medical Program',
-          icon: '🏢'
-        },
-        tracker: {
-          id: 205,
-          label: 'Epics',
-          color: 'surf-green'
-        },
-        submittedBy: {
-          id: 210,
-          name: 'DEGRYSE William',
-          username: 'wdegryse',
-          avatar_url: 'https://tuleap-web.swmcloud.net/users/wdegryse/avatar-a010a23522629057e9b53234d760915e029318f70a062824d55e788926eb16bc.png'
-        },
-        links: {
-          features: [],
-          stories: [],
-          tasks: [],
-          defects: []
-        },
-        tags: ['SEGUR V2', 'pas de communication client'],
-        expectedEndDate: '2025-06-18T00:00:00+02:00',
-        realEndDate: '2025-06-18T00:00:00+02:00',
-        expectedStartDate: '2025-03-10T00:00:00+01:00',
-        realStartDate: '2025-03-10T00:00:00+01:00'
-      }
-    ]
 
-    const mockEpic = mockEpics.find(e => e.id === id)
-    if (mockEpic) {
-      return mockEpic
+  // Helper method to decode HTML entities
+  decodeHtmlEntities(text: string): string {
+    if (!text) return text
+    
+    const entityMap: { [key: string]: string } = {
+      '&lt;': '<',
+      '&gt;': '>',
+      '&amp;': '&',
+      '&quot;': '"',
+      '&#39;': "'",
+      '&nbsp;': ' ',
+      '&copy;': '©',
+      '&reg;': '®',
+      '&trade;': '™',
+      '&ldquo;': '"',
+      '&rdquo;': '"',
+      '&lsquo;': "'",
+      '&rsquo;': "'",
+      '&ndash;': '–',
+      '&mdash;': '—',
+      '&hellip;': '…'
     }
+    
+    return text.replace(/&[a-zA-Z0-9#]+;/g, (entity) => {
+      return entityMap[entity] || entity
+    })
+  },
 
-    // Create a generic mock epic for any ID
-    return {
-      id,
-      title: `Mock Epic #${id}`,
-      status: 'To Do',
-      summary: `This is a mock epic with ID ${id} for development purposes.`,
-      leadTeam: 'Development Team',
-      estimation: 50,
-      remainingEffort: 25,
-      lastUpdateDate: new Date().toISOString(),
-      htmlUrl: `https://tuleap-web.swmcloud.net/plugins/tracker/?aid=${id}`,
-      project: {
-        id: 1,
-        label: 'Mock Project',
-        icon: '🔧'
-      },
-      tracker: {
-        id: 1,
-        label: 'Epics',
-        color: 'primary'
-      },
-      submittedBy: {
-        id: 1,
-        name: 'Mock User',
-        username: 'mock_user'
-      },
-      links: {
-        features: [],
-        stories: [],
-        tasks: [],
-        defects: []
-      },
-      tags: ['Mock', 'Development']
+  // Helper methods for field extraction
+  extractFieldValue(artifact: TuleapArtifact, fieldName: string): unknown {
+    const field = artifact.values?.find((v: TuleapArtifactValue) => v.label === fieldName)
+    return field?.value || field?.values?.[0]?.label || null
+  },
+
+  extractPoints(artifact: TuleapArtifact): number | null {
+    const points = this.extractFieldValue(artifact, 'Points') || 
+                  this.extractFieldValue(artifact, 'Story Points') ||
+                  this.extractFieldValue(artifact, 'Estimation') ||
+                  artifact.values_by_field?.points?.value ||
+                  artifact.values_by_field?.story_points?.value ||
+                  artifact.values_by_field?.estimation?.value
+    return points ? Number(points) : null
+  },
+
+  extractRemainingEffort(artifact: TuleapArtifact): number | null {
+    const remainingEffort = this.extractFieldValue(artifact, 'Remaining Effort') ||
+                           this.extractFieldValue(artifact, 'Remaining effort') ||
+                           artifact.values_by_field?.remaining_effort?.value
+    return remainingEffort ? Number(remainingEffort) : null
+  },
+
+  extractSprintInfo(artifact: TuleapArtifact): string | null {
+    const sprint = this.extractFieldValue(artifact, 'Sprint') ||
+                   this.extractFieldValue(artifact, 'Iteration') ||
+                   artifact.values_by_field?.sprint?.value ||
+                   artifact.values_by_field?.iteration?.value
+    return sprint ? String(sprint) : null
+  },
+
+  // Method to fetch sub-artifacts for a given artifact (Features -> Tasks/Stories)
+  async getSubArtifacts(artifact: TuleapArtifact): Promise<TuleapArtifact[]> {
+    const linksField = artifact.values?.find((v: TuleapArtifactValue) => v.label === 'Links')
+    const links = linksField?.links || []
+
+    if (links.length === 0) return []
+
+    try {
+      const artifactPromises = links.map(link => api.get(`/artifacts/${link.id}`))
+      const responses = await Promise.allSettled(artifactPromises)
+
+      const subArtifacts: TuleapArtifact[] = []
+      responses.forEach((response, index) => {
+        if (response.status === 'fulfilled') {
+          subArtifacts.push(response.value.data as TuleapArtifact)
+        } else {
+          // Skip failed API calls
+          return
+        }
+      })
+
+      return subArtifacts
+    } catch (error) {
+      console.error('Error fetching sub-artifacts:', error)
+      return []
     }
   },
+
 
   // Method to fetch related artifacts based on epic links
   async getRelatedArtifacts(epic: Epic): Promise<{
@@ -450,20 +341,25 @@ export const apiService = {
       const responses = await Promise.allSettled(artifactPromises)
 
       responses.forEach((response, index) => {
+        const artifactId = allArtifactIds[index]
+        let artifact: TuleapArtifact
+
         if (response.status === 'fulfilled') {
-          const artifact = response.value.data as TuleapArtifact
-          const artifactId = allArtifactIds[index]
-          
-          // Categorize the artifact based on its tracker type
-          if (epic.links!.features.some(link => link.id === artifactId)) {
-            results.features.push(artifact)
-          } else if (epic.links!.stories.some(link => link.id === artifactId)) {
-            results.stories.push(artifact)
-          } else if (epic.links!.tasks.some(link => link.id === artifactId)) {
-            results.tasks.push(artifact)
-          } else if (epic.links!.defects.some(link => link.id === artifactId)) {
-            results.defects.push(artifact)
-          }
+          artifact = response.value.data as TuleapArtifact
+        } else {
+          // Skip failed API calls
+          return
+        }
+        
+        // Categorize the artifact based on its tracker type
+        if (epic.links!.features.some(link => link.id === artifactId)) {
+          results.features.push(artifact)
+        } else if (epic.links!.stories.some(link => link.id === artifactId)) {
+          results.stories.push(artifact)
+        } else if (epic.links!.tasks.some(link => link.id === artifactId)) {
+          results.tasks.push(artifact)
+        } else if (epic.links!.defects.some(link => link.id === artifactId)) {
+          results.defects.push(artifact)
         }
       })
     } catch (error) {
@@ -471,6 +367,55 @@ export const apiService = {
     }
 
     return results
+  },
+
+  // Method to fetch hierarchical tree data for epic
+  async getEpicTreeData(epic: Epic): Promise<{
+    features: Array<{
+      artifact: TuleapArtifact,
+      subArtifacts: TuleapArtifact[],
+      points: number | null,
+      remainingEffort: number | null,
+      linkedArtifactCount: number,
+      percentWithPoints: number
+    }>,
+    directStories: TuleapArtifact[],
+    directTasks: TuleapArtifact[],
+    defects: TuleapArtifact[]
+  }> {
+    const relatedArtifacts = await this.getRelatedArtifacts(epic)
+    
+    // Process features with their sub-artifacts
+    const features = await Promise.all(
+      relatedArtifacts.features.map(async (feature) => {
+        const subArtifacts = await this.getSubArtifacts(feature)
+        const points = this.extractPoints(feature)
+        const remainingEffort = this.extractRemainingEffort(feature)
+        const linkedArtifactCount = subArtifacts.length
+        
+        // Calculate percentage of sub-artifacts with points
+        const artifactsWithPoints = subArtifacts.filter(sub => this.extractPoints(sub) !== null)
+        const percentWithPoints = linkedArtifactCount > 0 
+          ? Math.round((artifactsWithPoints.length / linkedArtifactCount) * 100)
+          : 0
+
+        return {
+          artifact: feature,
+          subArtifacts,
+          points,
+          remainingEffort,
+          linkedArtifactCount,
+          percentWithPoints
+        }
+      })
+    )
+
+    return {
+      features,
+      directStories: relatedArtifacts.stories,
+      directTasks: relatedArtifacts.tasks,
+      defects: relatedArtifacts.defects
+    }
   }
 }
 

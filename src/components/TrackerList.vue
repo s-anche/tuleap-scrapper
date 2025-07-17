@@ -125,7 +125,7 @@ const loadTrackers = async () => {
     
     if (searchQuery.value.trim()) {
       const query = searchQuery.value.toLowerCase()
-      filteredTrackers = response.filter(tracker =>
+      filteredTrackers = response.filter((tracker: Tracker) =>
         tracker.label.toLowerCase().includes(query) ||
         tracker.item_name.toLowerCase().includes(query) ||
         tracker.description?.toLowerCase().includes(query)

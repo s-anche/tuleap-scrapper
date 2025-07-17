@@ -258,3 +258,42 @@ export interface Epic {
   expectedStartDate?: string
   realStartDate?: string
 }
+
+export interface EpicTreeFeature {
+  artifact: TuleapArtifact
+  subArtifacts: TuleapArtifact[]
+  points: number | null
+  remainingEffort: number | null
+  linkedArtifactCount: number
+  percentWithPoints: number
+}
+
+export interface EpicTreeData {
+  features: EpicTreeFeature[]
+  directStories: TuleapArtifact[]
+  directTasks: TuleapArtifact[]
+  defects: TuleapArtifact[]
+}
+
+export interface TreeNode {
+  id: string
+  title: string
+  children?: TreeNode[]
+  type: 'epic' | 'feature' | 'story' | 'task' | 'defect'
+  artifact?: TuleapArtifact
+  status?: string
+  points?: number | null
+  remainingEffort?: number | null
+  sprint?: string | null
+  linkedArtifactCount?: number
+  percentWithPoints?: number
+  htmlUrl?: string
+}
+
+export interface ArtifactMetrics {
+  points: number | null
+  remainingEffort: number | null
+  sprint: string | null
+  status: string
+  htmlUrl: string
+}
