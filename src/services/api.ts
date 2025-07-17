@@ -135,6 +135,10 @@ export const apiService = {
   },
 
   transformArtifactToEpic(artifact: TuleapArtifact): Epic {
+    console.log('=== transformArtifactToEpic START ===')
+    console.log('Raw artifact values:', artifact.values)
+    console.log('Available field labels:', artifact.values?.map(v => v.label))
+    
     const getFieldValue = (fieldId: number) => {
       const field = artifact.values?.find((v: TuleapArtifactValue) => v.field_id === fieldId)
       return field?.value || field?.values?.[0]?.label || null
@@ -146,11 +150,27 @@ export const apiService = {
     }
 
     const getLinksField = () => {
-      const field = artifact.values?.find((v: TuleapArtifactValue) => v.label === 'Links')
-      return field?.links || []
+      // Try different possible field names for links
+      const possibleLinkFields = ['Links', 'links', 'Linked artifacts', 'Linked Artifacts', 'Artifact Links', 'Related Artifacts']
+      
+      for (const fieldName of possibleLinkFields) {
+        const field = artifact.values?.find((v: TuleapArtifactValue) => v.label === fieldName)
+        if (field) {
+          console.log(`Found links field with name: "${fieldName}"`)
+          console.log('Links field found:', field)
+          console.log('Links field.links:', field?.links)
+          return field?.links || []
+        }
+      }
+      
+      // If no field found, log all field names for debugging
+      console.log('No links field found with any expected name')
+      console.log('Available field names:', artifact.values?.map(v => v.label))
+      return []
     }
 
     const categorizeLinks = (links: TuleapArtifactLink[]) => {
+      console.log('Categorizing links, count:', links.length)
       const categories = {
         features: [] as TuleapArtifactLink[],
         stories: [] as TuleapArtifactLink[],
@@ -158,16 +178,23 @@ export const apiService = {
         defects: [] as TuleapArtifactLink[]
       }
 
-      links.forEach(link => {
+      links.forEach((link, index) => {
         const trackerLabel = link.tracker.label.toLowerCase()
+        console.log(`Link ${index}: tracker label = "${link.tracker.label}" (lowercase: "${trackerLabel}")`)
         if (trackerLabel.includes('feature')) {
+          console.log(`  -> Categorized as feature`)
           categories.features.push(link)
         } else if (trackerLabel.includes('stories') || trackerLabel.includes('story')) {
+          console.log(`  -> Categorized as story`)
           categories.stories.push(link)
         } else if (trackerLabel.includes('task')) {
+          console.log(`  -> Categorized as task`)
           categories.tasks.push(link)
         } else if (trackerLabel.includes('defect')) {
+          console.log(`  -> Categorized as defect`)
           categories.defects.push(link)
+        } else {
+          console.log(`  -> NOT CATEGORIZED (unknown tracker type)`)
         }
       })
 
@@ -180,7 +207,17 @@ export const apiService = {
     }
 
     const links = getLinksField()
+    console.log('Raw links from getLinksField:', links)
+    console.log('Links count:', links.length)
+    
     const categorizedLinks = categorizeLinks(links)
+    console.log('Categorized links:', categorizedLinks)
+    console.log('Categorized links counts:', {
+      features: categorizedLinks.features.length,
+      stories: categorizedLinks.stories.length,
+      tasks: categorizedLinks.tasks.length,
+      defects: categorizedLinks.defects.length
+    })
 
     return {
       id: artifact.id,
@@ -317,6 +354,9 @@ export const apiService = {
     tasks: TuleapArtifact[],
     defects: TuleapArtifact[]
   }> {
+    console.log('=== getRelatedArtifacts START ===')
+    console.log('Epic links passed to getRelatedArtifacts:', epic.links)
+    
     const results = {
       features: [] as TuleapArtifact[],
       stories: [] as TuleapArtifact[],
@@ -324,7 +364,11 @@ export const apiService = {
       defects: [] as TuleapArtifact[]
     }
 
-    if (!epic.links) return results
+    if (!epic.links) {
+      console.log('No epic links found, returning empty results')
+      console.log('=== getRelatedArtifacts END ===')
+      return results
+    }
 
     // Fetch all related artifacts in parallel
     const allArtifactIds = [
@@ -333,8 +377,15 @@ export const apiService = {
       ...epic.links.tasks.map(link => link.id),
       ...epic.links.defects.map(link => link.id)
     ]
+    
+    console.log('All artifact IDs collected:', allArtifactIds)
+    console.log('Total artifacts to fetch:', allArtifactIds.length)
 
-    if (allArtifactIds.length === 0) return results
+    if (allArtifactIds.length === 0) {
+      console.log('No artifact IDs found, returning empty results')
+      console.log('=== getRelatedArtifacts END ===')
+      return results
+    }
 
     try {
       const artifactPromises = allArtifactIds.map(id => api.get(`/artifacts/${id}`))
@@ -366,6 +417,9 @@ export const apiService = {
       console.error('Error fetching related artifacts:', error)
     }
 
+    console.log('Final results from getRelatedArtifacts:', results)
+    console.log('=== getRelatedArtifacts END ===')
+    
     return results
   },
 
@@ -383,7 +437,18 @@ export const apiService = {
     directTasks: TuleapArtifact[],
     defects: TuleapArtifact[]
   }> {
+    console.log('=== API getEpicTreeData START ===')
+    console.log('Epic passed to getEpicTreeData:', epic)
+    console.log('Epic links in getEpicTreeData:', epic.links)
+    
     const relatedArtifacts = await this.getRelatedArtifacts(epic)
+    console.log('Related artifacts fetched:', relatedArtifacts)
+    console.log('Related artifacts counts:', {
+      features: relatedArtifacts.features.length,
+      stories: relatedArtifacts.stories.length,
+      tasks: relatedArtifacts.tasks.length,
+      defects: relatedArtifacts.defects.length
+    })
     
     // Process features with their sub-artifacts
     const features = await Promise.all(
@@ -410,12 +475,17 @@ export const apiService = {
       })
     )
 
-    return {
+    const result = {
       features,
       directStories: relatedArtifacts.stories,
       directTasks: relatedArtifacts.tasks,
       defects: relatedArtifacts.defects
     }
+    
+    console.log('Final tree data result:', result)
+    console.log('=== API getEpicTreeData END ===')
+    
+    return result
   }
 }
 

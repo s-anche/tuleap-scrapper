@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { apiService } from '@/services/api'
 import type { Epic, TuleapArtifact } from '@/types/api'
 
@@ -29,12 +29,38 @@ const error = ref<string | null>(null)
 const treeData = ref<TreeNode[]>([])
 const openNodes = ref<string[]>(['epic'])
 
+// Transform data for v-treeview if needed
+const transformedTreeData = computed(() => {
+  const transformNode = (node: TreeNode): TreeNode => ({
+    ...node,
+    children: node.children ? sortByStatus(node.children).map(transformNode) : []
+  })
+  
+  return treeData.value.map(item => ({
+    ...item,
+    children: item.children ? sortByStatus(item.children).map(transformNode) : []
+  }))
+})
+
 const loadTreeData = async () => {
   try {
     loading.value = true
     error.value = null
     
+    console.log('=== EPIC TREE DEBUG START ===')
+    console.log('Epic object:', props.epic)
+    console.log('Epic links structure:', props.epic.links)
+    console.log('Epic links features count:', props.epic.links?.features?.length || 0)
+    console.log('Epic links stories count:', props.epic.links?.stories?.length || 0)
+    console.log('Epic links tasks count:', props.epic.links?.tasks?.length || 0)
+    console.log('Epic links defects count:', props.epic.links?.defects?.length || 0)
+    
     const epicTreeData = await apiService.getEpicTreeData(props.epic)
+    console.log('Epic tree data received:', epicTreeData)
+    console.log('Features in tree data:', epicTreeData.features?.length || 0)
+    console.log('Direct stories in tree data:', epicTreeData.directStories?.length || 0)
+    console.log('Direct tasks in tree data:', epicTreeData.directTasks?.length || 0)
+    console.log('Defects in tree data:', epicTreeData.defects?.length || 0)
     
     // Build tree structure
     const epicNode: TreeNode = {
@@ -133,8 +159,16 @@ const loadTreeData = async () => {
 
     treeData.value = [epicNode]
     
+    console.log('Built epic node:', epicNode)
+    console.log('Epic node children count:', epicNode.children?.length || 0)
+    console.log('Epic node children:', epicNode.children)
+    
     // Auto-expand first level
     openNodes.value = ['epic', ...epicNode.children!.map(child => child.id)]
+    console.log('Open nodes:', openNodes.value)
+    console.log('Open nodes type:', typeof openNodes.value)
+    console.log('Open nodes is array:', Array.isArray(openNodes.value))
+    console.log('=== EPIC TREE DEBUG END ===')
     
   } catch (err: unknown) {
     error.value = (err as Error).message || 'Failed to load tree data'
@@ -170,10 +204,40 @@ const getStatusColor = (status: string) => {
   switch (status?.toLowerCase()) {
     case 'done': return 'success'
     case 'development in progress': return 'warning'
+    case 'implementation in progress': return 'warning'
+    case 'implemented': return 'primary'
     case 'to do': return 'info'
+    case 'new': return 'info'
+    case 'ready': return 'info'
     case 'cancelled': return 'error'
+    case 'merged': return 'success'
+    case 'done without dev': return 'success'
     default: return 'grey'
   }
+}
+
+const getStatusPriority = (status: string): number => {
+  switch (status?.toLowerCase()) {
+    case 'new': return 1
+    case 'to do': return 2
+    case 'ready': return 3
+    case 'implementation in progress': return 4
+    case 'development in progress': return 4
+    case 'implemented': return 5
+    case 'done': return 6
+    case 'done without dev': return 6
+    case 'merged': return 6
+    case 'cancelled': return 7
+    default: return 8
+  }
+}
+
+const sortByStatus = (items: TreeNode[]): TreeNode[] => {
+  return [...items].sort((a, b) => {
+    const priorityA = getStatusPriority(a.status || '')
+    const priorityB = getStatusPriority(b.status || '')
+    return priorityA - priorityB
+  })
 }
 
 
@@ -207,101 +271,182 @@ onMounted(() => {
       </v-alert>
 
       <!-- Tree view -->
-      <v-treeview
-        v-else
-        :items="treeData"
-        :open="openNodes"
-        item-key="id"
-        item-title="title"
-        item-children="children"
-        open-strategy="multiple"
-        class="epic-tree"
-      >
-        <template #prepend="{ item }">
-          <v-icon
-            :icon="getTypeIcon(item.type)"
-            :color="getTypeColor(item.type)"
-            size="small"
-          />
-        </template>
-
-        <template #label="{ item }">
-          <div class="d-flex align-center flex-wrap ga-2">
-            <span class="font-weight-medium">{{ item.title }}</span>
-            
-            <!-- Status chip -->
-            <v-chip
-              v-if="item.status"
-              :color="getStatusColor(item.status)"
-              variant="tonal"
-              size="x-small"
+      <div v-else>
+        <!-- Tree view debugging -->
+        <div class="mb-4">
+          <h4>V-Treeview Debug:</h4>
+          <p>Items count: {{ transformedTreeData.length }}</p>
+          <p>First item: {{ transformedTreeData[0]?.id }} - {{ transformedTreeData[0]?.title }}</p>
+          <p>First item children: {{ transformedTreeData[0]?.children?.length }}</p>
+        </div>
+        
+        <!-- Simple v-treeview test -->
+        <v-treeview
+          :items="transformedTreeData"
+          item-key="id"
+          item-title="title"
+          item-children="children"
+          open-all
+          class="epic-tree"
+        />
+        
+        <!-- Alternative: Custom nested tree with features and sub-artifacts -->
+        <div class="mt-4">
+          <h4>Epic Artifacts Tree:</h4>
+          <v-expansion-panels multiple variant="accordion">
+            <v-expansion-panel
+              v-for="item in transformedTreeData"
+              :key="item.id"
+              :title="item.title"
             >
-              {{ item.status }}
-            </v-chip>
-
-            <!-- Points chip -->
-            <v-chip
-              v-if="item.points"
-              color="info"
-              variant="tonal"
-              size="x-small"
+              <v-expansion-panel-text>
+                <v-list v-if="item.children && item.children.length > 0">
+                  <!-- Features with their sub-artifacts -->
+                  <template v-for="child in item.children" :key="child.id">
+                    <!-- Feature item -->
+                    <v-list-item
+                      v-if="child.type === 'feature'"
+                      :prepend-icon="getTypeIcon(child.type)"
+                      :href="child.htmlUrl"
+                      target="_blank"
+                      class="feature-item"
+                    >
+                      <v-list-item-title class="font-weight-medium">
+                        {{ child.title }}
+                        <v-chip
+                          v-if="child.linkedArtifactCount"
+                          size="x-small"
+                          variant="tonal"
+                          color="info"
+                          class="ml-2"
+                        >
+                          {{ child.linkedArtifactCount }} items
+                        </v-chip>
+                      </v-list-item-title>
+                      <template #append>
+                        <v-chip
+                          v-if="child.status"
+                          :color="getStatusColor(child.status)"
+                          size="x-small"
+                          variant="tonal"
+                        >
+                          {{ child.status }}
+                        </v-chip>
+                      </template>
+                    </v-list-item>
+                    
+                    <!-- Sub-artifacts under features -->
+                    <v-list v-if="child.children && child.children.length > 0" class="ml-8">
+                      <v-list-item
+                        v-for="subArtifact in child.children"
+                        :key="subArtifact.id"
+                        :prepend-icon="getTypeIcon(subArtifact.type)"
+                        :href="subArtifact.htmlUrl"
+                        target="_blank"
+                        class="sub-artifact-item"
+                        density="compact"
+                      >
+                        <v-list-item-title class="text-body-2">
+                          {{ subArtifact.title }}
+                        </v-list-item-title>
+                        <template #append>
+                          <div class="d-flex align-center ga-2">
+                            <v-chip
+                              v-if="subArtifact.points"
+                              size="x-small"
+                              variant="tonal"
+                              color="primary"
+                            >
+                              {{ subArtifact.points }}pts
+                            </v-chip>
+                            <v-chip
+                              v-if="subArtifact.status"
+                              :color="getStatusColor(subArtifact.status)"
+                              size="x-small"
+                              variant="tonal"
+                            >
+                              {{ subArtifact.status }}
+                            </v-chip>
+                          </div>
+                        </template>
+                      </v-list-item>
+                    </v-list>
+                    
+                    <!-- Direct stories/tasks (not under features) -->
+                    <v-list-item
+                      v-if="child.type !== 'feature'"
+                      :prepend-icon="getTypeIcon(child.type)"
+                      :href="child.htmlUrl"
+                      target="_blank"
+                      class="direct-item"
+                    >
+                      <v-list-item-title>{{ child.title }}</v-list-item-title>
+                      <template #append>
+                        <div class="d-flex align-center ga-2">
+                          <v-chip
+                            v-if="child.points"
+                            size="x-small"
+                            variant="tonal"
+                            color="primary"
+                          >
+                            {{ child.points }}pts
+                          </v-chip>
+                          <v-chip
+                            v-if="child.status"
+                            :color="getStatusColor(child.status)"
+                            size="x-small"
+                            variant="tonal"
+                          >
+                            {{ child.status }}
+                          </v-chip>
+                        </div>
+                      </template>
+                    </v-list-item>
+                  </template>
+                </v-list>
+              </v-expansion-panel-text>
+            </v-expansion-panel>
+          </v-expansion-panels>
+        </div>
+        
+        <!-- Fallback manual list for debugging -->
+        <div class="mt-4">
+          <h4>Manual Children List (Debug):</h4>
+          <v-list v-if="treeData[0]?.children?.length > 0">
+            <v-list-item
+              v-for="child in treeData[0].children"
+              :key="child.id"
+              :prepend-icon="getTypeIcon(child.type)"
             >
-              {{ item.points }} pts
-            </v-chip>
-
-            <!-- Remaining effort chip -->
-            <v-chip
-              v-if="item.remainingEffort"
-              color="warning"
-              variant="tonal"
-              size="x-small"
-            >
-              {{ item.remainingEffort }} remaining
-            </v-chip>
-
-            <!-- Sprint chip for stories/tasks -->
-            <v-chip
-              v-if="item.sprint && (item.type === 'story' || item.type === 'task')"
-              color="secondary"
-              variant="tonal"
-              size="x-small"
-            >
-              {{ item.sprint }}
-            </v-chip>
-
-            <!-- Feature metrics -->
-            <template v-if="item.type === 'feature'">
-              <v-chip
-                v-if="item.linkedArtifactCount"
-                color="primary"
-                variant="tonal"
-                size="x-small"
-              >
-                {{ item.linkedArtifactCount }} linked
-              </v-chip>
-              <v-chip
-                v-if="item.percentWithPoints !== undefined"
-                :color="item.percentWithPoints === 100 ? 'success' : item.percentWithPoints > 50 ? 'warning' : 'error'"
-                variant="tonal"
-                size="x-small"
-              >
-                {{ item.percentWithPoints }}% estimated
-              </v-chip>
-            </template>
-
-            <!-- Action button -->
-            <v-btn
-              v-if="item.htmlUrl"
-              :href="item.htmlUrl"
-              target="_blank"
-              variant="text"
-              size="x-small"
-              icon="mdi-open-in-new"
-              :color="getTypeColor(item.type)"
-            />
-          </div>
-        </template>
-      </v-treeview>
+              <v-list-item-title>{{ child.title }}</v-list-item-title>
+              <template #append>
+                <v-chip
+                  v-if="child.status"
+                  :color="getStatusColor(child.status)"
+                  size="x-small"
+                  variant="tonal"
+                >
+                  {{ child.status }}
+                </v-chip>
+              </template>
+            </v-list-item>
+          </v-list>
+        </div>
+      </div>
+      
+      <!-- Debug info -->
+      <div v-if="treeData.length > 0" class="mt-4 pa-4" style="background: #f5f5f5; border-radius: 8px;">
+        <h4>Debug Info:</h4>
+        <p>Tree data items: {{ treeData.length }}</p>
+        <p>Children in first item: {{ treeData[0]?.children?.length || 0 }}</p>
+        <p>Open nodes: {{ openNodes.length }}</p>
+        <p>First child ID: {{ treeData[0]?.children?.[0]?.id }}</p>
+        <p>First child title: {{ treeData[0]?.children?.[0]?.title }}</p>
+        <details>
+          <summary>Raw tree data (first 3 children)</summary>
+          <pre>{{ JSON.stringify(treeData[0]?.children?.slice(0, 3), null, 2) }}</pre>
+        </details>
+      </div>
 
       <!-- Empty state -->
       <div v-if="!loading && !error && treeData.length === 0" class="text-center py-8">
@@ -334,5 +479,24 @@ onMounted(() => {
   .epic-tree :deep(.v-treeview-item__content) {
     padding: 6px 12px;
   }
+}
+
+/* Custom tree styling */
+.feature-item {
+  background: rgba(var(--v-theme-primary), 0.05);
+  border-left: 3px solid rgb(var(--v-theme-primary));
+  margin-bottom: 8px;
+}
+
+.sub-artifact-item {
+  background: rgba(var(--v-theme-surface), 0.5);
+  border-left: 2px solid rgba(var(--v-theme-primary), 0.3);
+  margin-bottom: 2px;
+}
+
+.direct-item {
+  background: rgba(var(--v-theme-success), 0.05);
+  border-left: 3px solid rgb(var(--v-theme-success));
+  margin-bottom: 4px;
 }
 </style>
