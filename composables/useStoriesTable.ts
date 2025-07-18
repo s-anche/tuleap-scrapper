@@ -5,6 +5,7 @@ import { apiService } from '@/services/api'
 export interface TableRow {
   id: number
   parentId: number | null
+  epicId: number
   title: string
   status: string
   points: number | null
@@ -27,26 +28,26 @@ export const useStoriesTable = () => {
         for (const feature of treeData.features) {
           // Add sub-artifacts (stories and tasks under features)
           for (const subArtifact of feature.subArtifacts) {
-            const row = await createTableRow(subArtifact, feature.artifact.id)
+            const row = await createTableRow(subArtifact, feature.artifact.id, epic.id)
             rows.push(row)
           }
         }
         
         // Process direct stories (stories directly linked to epic)
         for (const story of treeData.directStories) {
-          const row = await createTableRow(story, epic.id)
+          const row = await createTableRow(story, epic.id, epic.id)
           rows.push(row)
         }
         
         // Process direct tasks (tasks directly linked to epic)
         for (const task of treeData.directTasks) {
-          const row = await createTableRow(task, epic.id)
+          const row = await createTableRow(task, epic.id, epic.id)
           rows.push(row)
         }
         
         // Process direct defects (defects directly linked to epic)
         for (const defect of treeData.defects) {
-          const row = await createTableRow(defect, epic.id)
+          const row = await createTableRow(defect, epic.id, epic.id)
           rows.push(row)
         }
       } catch (error) {
@@ -57,7 +58,7 @@ export const useStoriesTable = () => {
     return rows
   }
 
-  const createTableRow = async (artifact: TuleapArtifact, parentId: number): Promise<TableRow> => {
+  const createTableRow = async (artifact: TuleapArtifact, parentId: number, epicId: number): Promise<TableRow> => {
     const trackerLabel = artifact.tracker.label.toLowerCase()
     
     // Enhanced type classification logic
@@ -73,6 +74,7 @@ export const useStoriesTable = () => {
     return {
       id: artifact.id,
       parentId,
+      epicId,
       title: artifact.title,
       status: artifact.status,
       points: apiService.extractPoints(artifact),

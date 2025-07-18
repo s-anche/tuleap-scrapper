@@ -1,0 +1,3 @@
+- I want to use `/artifacts/536813/changesets?fields=all&limit=10&offset=0&order=asc` each estimation for this story.
+- I want to convert this date into a sprint.
+- i want to Use that estimation date to compute the target curve.

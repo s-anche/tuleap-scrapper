@@ -45,6 +45,13 @@
       </div>
     </div>
 
+    <!-- Burnup Chart -->
+    <BurnupChart
+      v-if="tableRows.length > 0"
+      :filtered-rows="filteredRows"
+      :mean-points="meanPointsPerStory"
+    />
+
     <!-- Search and Filters -->
     <v-card v-if="tableRows.length > 0" class="mb-4">
       <v-card-text>
@@ -60,7 +67,7 @@
               clearable
             />
           </v-col>
-          <v-col cols="12" md="3">
+          <v-col cols="12" md="6" lg="3">
             <v-select
               v-model="statusFilter"
               label="Status"
@@ -70,11 +77,21 @@
               clearable
             />
           </v-col>
-          <v-col cols="12" md="3">
+          <v-col cols="12" md="6" lg="3">
             <v-select
               v-model="typeFilter"
               label="Type"
               :items="typeOptions"
+              variant="outlined"
+              density="compact"
+              clearable
+            />
+          </v-col>
+          <v-col cols="12" md="6" lg="3">
+            <v-select
+              v-model="epicFilter"
+              label="Epic ID"
+              :items="epicOptions"
               variant="outlined"
               density="compact"
               clearable
@@ -172,6 +189,7 @@ import { ref, computed, watch } from 'vue'
 import { useEpicStore } from '@/stores/epics'
 import { storeToRefs } from 'pinia'
 import { useStoriesTable, type TableRow } from '@/composables/useStoriesTable'
+import BurnupChart from '@/components/BurnupChart.vue'
 
 // Set page meta for authentication
 definePageMeta({
@@ -190,6 +208,7 @@ const { flattenEpicTreeData } = useStoriesTable()
 const search = ref('')
 const statusFilter = ref('')
 const typeFilter = ref('')
+const epicFilter = ref('')
 const tableRows = ref<TableRow[]>([])
 const tableLoading = ref(false)
 
@@ -239,6 +258,14 @@ const typeOptions = computed(() => [
   { title: 'Defect', value: 'defect' },
 ])
 
+const epicOptions = computed(() => {
+  const epicIds = [...new Set(tableRows.value.map((row) => row.epicId))]
+  return epicIds.sort((a, b) => a - b).map(epicId => ({
+    title: `Epic ${epicId}`,
+    value: epicId.toString()
+  }))
+})
+
 // Filtered rows based on search and filters
 const filteredRows = computed(() => {
   let filtered = tableRows.value
@@ -263,6 +290,11 @@ const filteredRows = computed(() => {
   // Apply type filter
   if (typeFilter.value) {
     filtered = filtered.filter((row) => row.type === typeFilter.value)
+  }
+
+  // Apply epic filter
+  if (epicFilter.value) {
+    filtered = filtered.filter((row) => row.epicId.toString() === epicFilter.value)
   }
 
   // Apply custom sorting: items without sprint first, then by sprint descending

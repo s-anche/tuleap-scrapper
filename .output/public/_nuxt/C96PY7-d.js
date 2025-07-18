@@ -1,1 +1,0 @@
-import{d as s,g as e,I as _,y as p,C as t,B as l,W as r}from"./CTSJwtqj.js";const d=s({__name:"auth",setup(c){return(a,m)=>{const n=e("v-main"),o=e("v-app");return p(),_(o,null,{default:t(()=>[l(n,null,{default:t(()=>[r(a.$slots,"default")]),_:3})]),_:3})}}});export{d as default};
