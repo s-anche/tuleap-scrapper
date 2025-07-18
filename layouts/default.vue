@@ -36,7 +36,8 @@ const handleLogout = () => {
 <template>
   <v-app>
     <!-- Navigation Drawer -->
-    <v-navigation-drawer permanent>
+    <ClientOnly>
+      <v-navigation-drawer permanent>
       <v-list-item prepend-icon="mdi-clipboard-list" title="Epic Tracker" nav />
 
       <v-divider />
@@ -119,6 +120,7 @@ const handleLogout = () => {
         </v-list>
       </template>
     </v-navigation-drawer>
+    </ClientOnly>
 
     <!-- App Bar -->
     <v-app-bar>

@@ -305,7 +305,14 @@ export const apiService = {
       artifact.values_by_field?.points?.value ||
       artifact.values_by_field?.story_points?.value ||
       artifact.values_by_field?.estimation?.value
-    return points ? Number(points) : null
+
+    // Return null only if points is undefined/null, not if it's 0
+    if (points === undefined || points === null || points === '') {
+      return null
+    }
+
+    const numericPoints = Number(points)
+    return isNaN(numericPoints) ? null : numericPoints
   },
 
   extractRemainingEffort(artifact: TuleapArtifact): number | null {
@@ -360,24 +367,41 @@ export const apiService = {
     return null
   },
 
-  // Method to fetch linked artifacts using the optimized endpoint
+  // Method to fetch linked artifacts using the optimized endpoint with pagination
   async getLinkedArtifacts(
     artifactId: number,
     direction: 'forward' | 'reverse' = 'forward',
     nature: string = '_is_child',
   ): Promise<TuleapArtifact[]> {
     try {
-      const response = await apiRequest<{ collection: TuleapArtifact[] }>(
-        `/artifacts/${artifactId}/linked_artifacts`,
-        {
-          method: 'GET',
-          query: {
-            direction,
-            nature,
+      const allArtifacts: TuleapArtifact[] = []
+      let offset = 0
+      const limit = 50 // Fetch 50 items per page
+      let hasMore = true
+
+      while (hasMore) {
+        const response = await apiRequest<{ collection: TuleapArtifact[] }>(
+          `/artifacts/${artifactId}/linked_artifacts`,
+          {
+            method: 'GET',
+            query: {
+              direction,
+              nature,
+              limit,
+              offset,
+            },
           },
-        },
-      )
-      return response.collection || []
+        )
+        
+        const artifacts = response.collection || []
+        allArtifacts.push(...artifacts)
+        
+        // If we got fewer items than the limit, we've reached the end
+        hasMore = artifacts.length === limit
+        offset += limit
+      }
+
+      return allArtifacts
     } catch (error) {
       console.error(`Error fetching linked artifacts for ${artifactId}:`, error)
       return []
@@ -444,7 +468,6 @@ export const apiService = {
     defects: TuleapArtifact[]
   }> {
     const relatedArtifacts = await this.getRelatedArtifacts(epic)
-
     // Process features with their sub-artifacts
     const features = await Promise.all(
       relatedArtifacts.features.map(async (feature) => {

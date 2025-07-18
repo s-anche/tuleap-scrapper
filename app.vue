@@ -16,5 +16,7 @@ const epicStore = useEpicStore()
 // Check for existing auth token on app start
 onMounted(() => {
   authStore.checkAuth()
+  // Ensure epic store is properly hydrated
+  epicStore.hydrate()
 })
 </script>

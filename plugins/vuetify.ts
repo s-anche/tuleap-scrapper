@@ -8,7 +8,18 @@ export default defineNuxtPlugin(nuxtApp => {
     directives,
     theme: {
       defaultTheme: 'light'
-    }
+    },
+    ssr: true,
+    display: {
+      mobileBreakpoint: 'sm',
+      thresholds: {
+        xs: 0,
+        sm: 600,
+        md: 960,
+        lg: 1280,
+        xl: 1920,
+      },
+    },
   })
 
   nuxtApp.vueApp.use(vuetify)

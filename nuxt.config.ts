@@ -1,5 +1,10 @@
 export default defineNuxtConfig({
-  devtools: { enabled: true },
+  devtools: { 
+    enabled: true,
+    timeline: {
+      enabled: true
+    }
+  },
   
   // TypeScript configuration
   typescript: {
@@ -18,6 +23,11 @@ export default defineNuxtConfig({
     '@pinia/nuxt'
   ],
 
+  // Pinia configuration
+  pinia: {
+    storesDirs: ['./stores/**']
+  },
+
   // Runtime config for environment variables
   runtimeConfig: {
     // Private keys (only available on server-side)
@@ -35,7 +45,8 @@ export default defineNuxtConfig({
   
   // Plugins
   plugins: [
-    '~/plugins/vuetify.ts'
+    '~/plugins/vuetify.ts',
+    '~/plugins/pinia.client.ts'
   ],
 
   // Server-side rendering
@@ -45,6 +56,7 @@ export default defineNuxtConfig({
   vite: {
     define: {
       'process.env.DEBUG': false,
+      '__VUE_PROD_DEVTOOLS__': process.env.NODE_ENV !== 'production'
     },
     ssr: {
       noExternal: ['vuetify']

@@ -9,7 +9,7 @@ export interface TableRow {
   status: string
   points: number | null
   sprint: string | null
-  type: 'story' | 'task'
+  type: 'story' | 'task' | 'defect'
   htmlUrl: string
 }
 
@@ -21,6 +21,7 @@ export const useStoriesTable = () => {
       try {
         // Get the epic tree data
         const treeData = await apiService.getEpicTreeData(epic)
+        
         
         // Process features and their sub-artifacts
         for (const feature of treeData.features) {
@@ -42,6 +43,12 @@ export const useStoriesTable = () => {
           const row = await createTableRow(task, epic.id)
           rows.push(row)
         }
+        
+        // Process direct defects (defects directly linked to epic)
+        for (const defect of treeData.defects) {
+          const row = await createTableRow(defect, epic.id)
+          rows.push(row)
+        }
       } catch (error) {
         console.error(`Error processing epic ${epic.id}:`, error)
       }
@@ -52,7 +59,16 @@ export const useStoriesTable = () => {
 
   const createTableRow = async (artifact: TuleapArtifact, parentId: number): Promise<TableRow> => {
     const trackerLabel = artifact.tracker.label.toLowerCase()
-    const type = trackerLabel.includes('story') ? 'story' : 'task'
+    
+    // Enhanced type classification logic
+    let type: 'story' | 'task' | 'defect' = 'task' // default to task
+    
+    if (trackerLabel.includes('story') || trackerLabel.includes('stories')) {
+      type = 'story'
+    } else if (trackerLabel.includes('defect') || trackerLabel.includes('bug') || trackerLabel.includes('issue')) {
+      type = 'defect'
+    }
+    
     
     return {
       id: artifact.id,

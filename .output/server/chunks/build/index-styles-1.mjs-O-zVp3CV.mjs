@@ -1,0 +1,4 @@
+const index_vue_vue_type_style_index_0_scoped_c897b27e_lang = '.kanban-board[data-v-c897b27e]{position:relative}.kanban-board[data-v-c897b27e]:before{background:linear-gradient(135deg,#1976d20d,#2196f30d);border-radius:12px;content:"";inset:0;pointer-events:none;position:absolute}.kanban-board div[data-v-c897b27e]::-webkit-scrollbar{height:8px}.kanban-board div[data-v-c897b27e]::-webkit-scrollbar-track{background:#0000001a;border-radius:4px}.kanban-board div[data-v-c897b27e]::-webkit-scrollbar-thumb{background:#1976d24d;border-radius:4px}.kanban-board div[data-v-c897b27e]::-webkit-scrollbar-thumb:hover{background:#1976d280}@media (max-width:1024px){.kanban-board .d-flex[data-v-c897b27e]{min-width:-moz-max-content;min-width:max-content}}.kanban-board .d-flex[data-v-c897b27e]{transition:all .3s ease}';
+
+export { index_vue_vue_type_style_index_0_scoped_c897b27e_lang as i };
+//# sourceMappingURL=index-styles-1.mjs-O-zVp3CV.mjs.map
