@@ -31,7 +31,7 @@ const apiRequest = async <T>(endpoint: string, options: any = {}): Promise<T> =>
   const fetchOptions = {
     method: options.method || 'GET',
     headers,
-    query: options.query
+    query: options.query,
   }
 
   try {
@@ -161,7 +161,6 @@ export const apiService = {
   },
 
   transformArtifactToEpic(artifact: TuleapArtifact): Epic {
-
     const getFieldValue = (fieldId: number) => {
       const field = artifact.values?.find((v: TuleapArtifactValue) => v.field_id === fieldId)
       return field?.value || field?.values?.[0]?.label || null
@@ -361,34 +360,34 @@ export const apiService = {
     return null
   },
 
-  // Method to fetch sub-artifacts for a given artifact (Features -> Tasks/Stories)
-  async getSubArtifacts(artifact: TuleapArtifact): Promise<TuleapArtifact[]> {
-    const linksField = artifact.values?.find((v: TuleapArtifactValue) => v.label === 'Links')
-    const links = linksField?.links || []
-
-    if (links.length === 0) return []
-
+  // Method to fetch linked artifacts using the optimized endpoint
+  async getLinkedArtifacts(
+    artifactId: number,
+    direction: 'forward' | 'reverse' = 'forward',
+    nature: string = '_is_child',
+  ): Promise<TuleapArtifact[]> {
     try {
-      const artifactPromises = links.map((link) =>
-        apiRequest<TuleapArtifact>(`/artifacts/${link.id}`),
+      const response = await apiRequest<{ collection: TuleapArtifact[] }>(
+        `/artifacts/${artifactId}/linked_artifacts`,
+        {
+          method: 'GET',
+          query: {
+            direction,
+            nature,
+          },
+        },
       )
-      const responses = await Promise.allSettled(artifactPromises)
-
-      const subArtifacts: TuleapArtifact[] = []
-      responses.forEach((response) => {
-        if (response.status === 'fulfilled') {
-          subArtifacts.push(response.value as TuleapArtifact)
-        } else {
-          // Skip failed API calls
-          return
-        }
-      })
-
-      return subArtifacts
+      return response.collection || []
     } catch (error) {
-      console.error('Error fetching sub-artifacts:', error)
+      console.error(`Error fetching linked artifacts for ${artifactId}:`, error)
       return []
     }
+  },
+
+  // Method to fetch sub-artifacts for a given artifact (Features -> Tasks/Stories)
+  async getSubArtifacts(artifact: TuleapArtifact): Promise<TuleapArtifact[]> {
+    // Use the optimized linked_artifacts endpoint
+    return await this.getLinkedArtifacts(artifact.id, 'forward', '_is_child')
   },
 
   // Method to fetch related artifacts based on epic links
@@ -405,47 +404,21 @@ export const apiService = {
       defects: [] as TuleapArtifact[],
     }
 
-    if (!epic.links) {
-      return results
-    }
-
-    // Fetch all related artifacts in parallel
-    const allArtifactIds = [
-      ...epic.links.features.map((link) => link.id),
-      ...epic.links.stories.map((link) => link.id),
-      ...epic.links.tasks.map((link) => link.id),
-      ...epic.links.defects.map((link) => link.id),
-    ]
-
-    if (allArtifactIds.length === 0) {
-      return results
-    }
-
+    // Use the optimized linked_artifacts endpoint to get all children at once
     try {
-      const artifactPromises = allArtifactIds.map((id) =>
-        apiRequest<TuleapArtifact>(`/artifacts/${id}`),
-      )
-      const responses = await Promise.allSettled(artifactPromises)
+      const linkedArtifacts = await this.getLinkedArtifacts(epic.id, 'forward', '_is_child')
 
-      responses.forEach((response, index) => {
-        const artifactId = allArtifactIds[index]
-        let artifact: TuleapArtifact
+      // Categorize the artifacts based on their tracker type
+      linkedArtifacts.forEach((artifact) => {
+        const trackerLabel = artifact.tracker.label.toLowerCase()
 
-        if (response.status === 'fulfilled') {
-          artifact = response.value as TuleapArtifact
-        } else {
-          // Skip failed API calls
-          return
-        }
-
-        // Categorize the artifact based on its tracker type
-        if (epic.links!.features.some((link) => link.id === artifactId)) {
+        if (trackerLabel.includes('feature')) {
           results.features.push(artifact)
-        } else if (epic.links!.stories.some((link) => link.id === artifactId)) {
+        } else if (trackerLabel.includes('stories') || trackerLabel.includes('story')) {
           results.stories.push(artifact)
-        } else if (epic.links!.tasks.some((link) => link.id === artifactId)) {
+        } else if (trackerLabel.includes('task')) {
           results.tasks.push(artifact)
-        } else if (epic.links!.defects.some((link) => link.id === artifactId)) {
+        } else if (trackerLabel.includes('defect')) {
           results.defects.push(artifact)
         }
       })
