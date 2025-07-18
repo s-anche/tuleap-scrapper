@@ -62,7 +62,7 @@ export const useStoriesTable = () => {
       points: apiService.extractPoints(artifact),
       sprint: await apiService.extractSprintInfo(artifact),
       type,
-      htmlUrl: artifact.html_url
+      htmlUrl: apiService.buildTuleapUrl(artifact.html_url, artifact.id)
     }
   }
 
