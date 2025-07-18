@@ -15,9 +15,14 @@ const showLayout = computed(() => {
 
 const navigationItems = [
   {
-    title: 'Epic Tracker',
-    icon: 'mdi-clipboard-list',
+    title: 'Epic Board',
+    icon: 'mdi-view-column',
     to: '/',
+  },
+  {
+    title: 'Stories & Tasks',
+    icon: 'mdi-table',
+    to: '/stories-table',
   },
 ]
 

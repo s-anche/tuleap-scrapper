@@ -46,6 +46,9 @@ api.interceptors.response.use(
   }
 )
 
+// Sprint cache for performance optimization
+const sprintCache = new Map<number, Artifact>()
+
 // Real API Service Methods
 export const apiService = {
   // Projects
@@ -310,12 +313,47 @@ export const apiService = {
     return remainingEffort ? Number(remainingEffort) : null
   },
 
-  extractSprintInfo(artifact: TuleapArtifact): string | null {
-    const sprint = this.extractFieldValue(artifact, 'Sprint') ||
-                   this.extractFieldValue(artifact, 'Iteration') ||
-                   artifact.values_by_field?.sprint?.value ||
-                   artifact.values_by_field?.iteration?.value
-    return sprint ? String(sprint) : null
+  async extractSprintInfo(artifact: TuleapArtifact): Promise<string | null> {
+    // First try direct sprint fields (backward compatibility)
+    const directSprint = this.extractFieldValue(artifact, 'Sprint') ||
+                        this.extractFieldValue(artifact, 'Iteration') ||
+                        artifact.values_by_field?.sprint?.value ||
+                        artifact.values_by_field?.iteration?.value
+    
+    if (directSprint) {
+      return String(directSprint)
+    }
+
+    // Look for sprint in reverse_links
+    const linksField = artifact.values?.find((v: TuleapArtifactValue) => v.label === 'Links')
+    const reverseLinks = linksField?.reverse_links || []
+    
+    const sprintLink = reverseLinks.find((link: TuleapArtifactLink) => 
+      link.tracker.label.toLowerCase().includes('sprint')
+    )
+    
+    if (sprintLink) {
+      try {
+        // Check cache first
+        if (sprintCache.has(sprintLink.id)) {
+          const cachedSprint = sprintCache.get(sprintLink.id)!
+          return cachedSprint.title || null
+        }
+
+        // Fetch sprint artifact
+        const sprintArtifact = await this.getArtifact(sprintLink.id)
+        
+        // Cache the result
+        sprintCache.set(sprintLink.id, sprintArtifact)
+        
+        return sprintArtifact.title || null
+      } catch (error) {
+        console.error(`Error fetching sprint artifact ${sprintLink.id}:`, error)
+        return null
+      }
+    }
+
+    return null
   },
 
   // Method to fetch sub-artifacts for a given artifact (Features -> Tasks/Stories)
@@ -330,7 +368,7 @@ export const apiService = {
       const responses = await Promise.allSettled(artifactPromises)
 
       const subArtifacts: TuleapArtifact[] = []
-      responses.forEach((response, index) => {
+      responses.forEach((response) => {
         if (response.status === 'fulfilled') {
           subArtifacts.push(response.value.data as TuleapArtifact)
         } else {

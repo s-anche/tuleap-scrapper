@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
 import LoginView from '../views/LoginView.vue'
 import TestView from '../views/TestView.vue'
+import StoriesTableView from '../views/StoriesTableView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -34,6 +35,19 @@ const router = createRouter({
         title: 'Dashboard',
         breadcrumbs: [
           { title: 'Dashboard', disabled: true }
+        ]
+      },
+    },
+    {
+      path: '/stories-table',
+      name: 'stories-table',
+      component: StoriesTableView,
+      meta: { 
+        requiresAuth: true,
+        title: 'Stories & Tasks',
+        breadcrumbs: [
+          { title: 'Home', disabled: false, to: '/' },
+          { title: 'Stories & Tasks', disabled: true }
         ]
       },
     },

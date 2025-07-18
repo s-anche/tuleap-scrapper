@@ -62,7 +62,7 @@ const loadTreeData = async () => {
     }
 
     // Add features with their sub-artifacts
-    epicTreeData.features.forEach(feature => {
+    for (const feature of epicTreeData.features) {
       const featureNode: TreeNode = {
         id: `feature-${feature.artifact.id}`,
         title: feature.artifact.title,
@@ -78,7 +78,7 @@ const loadTreeData = async () => {
       }
 
       // Add sub-artifacts (tasks/stories under features)
-      feature.subArtifacts.forEach(subArtifact => {
+      for (const subArtifact of feature.subArtifacts) {
         const subNode: TreeNode = {
           id: `sub-${subArtifact.id}`,
           title: subArtifact.title,
@@ -87,17 +87,17 @@ const loadTreeData = async () => {
           status: subArtifact.status,
           points: apiService.extractPoints(subArtifact),
           remainingEffort: apiService.extractRemainingEffort(subArtifact),
-          sprint: apiService.extractSprintInfo(subArtifact),
+          sprint: await apiService.extractSprintInfo(subArtifact),
           htmlUrl: apiService.buildTuleapUrl(subArtifact.html_url, subArtifact.id)
         }
         featureNode.children!.push(subNode)
-      })
+      }
 
       epicNode.children!.push(featureNode)
-    })
+    }
 
     // Add direct stories (not under features)
-    epicTreeData.directStories.forEach(story => {
+    for (const story of epicTreeData.directStories) {
       const storyNode: TreeNode = {
         id: `story-${story.id}`,
         title: story.title,
@@ -106,14 +106,14 @@ const loadTreeData = async () => {
         status: story.status,
         points: apiService.extractPoints(story),
         remainingEffort: apiService.extractRemainingEffort(story),
-        sprint: apiService.extractSprintInfo(story),
+        sprint: await apiService.extractSprintInfo(story),
         htmlUrl: apiService.buildTuleapUrl(story.html_url, story.id)
       }
       epicNode.children!.push(storyNode)
-    })
+    }
 
     // Add direct tasks (not under features)
-    epicTreeData.directTasks.forEach(task => {
+    for (const task of epicTreeData.directTasks) {
       const taskNode: TreeNode = {
         id: `task-${task.id}`,
         title: task.title,
@@ -122,14 +122,14 @@ const loadTreeData = async () => {
         status: task.status,
         points: apiService.extractPoints(task),
         remainingEffort: apiService.extractRemainingEffort(task),
-        sprint: apiService.extractSprintInfo(task),
+        sprint: await apiService.extractSprintInfo(task),
         htmlUrl: apiService.buildTuleapUrl(task.html_url, task.id)
       }
       epicNode.children!.push(taskNode)
-    })
+    }
 
     // Add defects
-    epicTreeData.defects.forEach(defect => {
+    for (const defect of epicTreeData.defects) {
       const defectNode: TreeNode = {
         id: `defect-${defect.id}`,
         title: defect.title,
@@ -138,11 +138,11 @@ const loadTreeData = async () => {
         status: defect.status,
         points: apiService.extractPoints(defect),
         remainingEffort: apiService.extractRemainingEffort(defect),
-        sprint: apiService.extractSprintInfo(defect),
+        sprint: await apiService.extractSprintInfo(defect),
         htmlUrl: apiService.buildTuleapUrl(defect.html_url, defect.id)
       }
       epicNode.children!.push(defectNode)
-    })
+    }
 
     treeData.value = [epicNode]
     
