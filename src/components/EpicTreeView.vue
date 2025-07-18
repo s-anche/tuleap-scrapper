@@ -47,20 +47,7 @@ const loadTreeData = async () => {
     loading.value = true
     error.value = null
     
-    console.log('=== EPIC TREE DEBUG START ===')
-    console.log('Epic object:', props.epic)
-    console.log('Epic links structure:', props.epic.links)
-    console.log('Epic links features count:', props.epic.links?.features?.length || 0)
-    console.log('Epic links stories count:', props.epic.links?.stories?.length || 0)
-    console.log('Epic links tasks count:', props.epic.links?.tasks?.length || 0)
-    console.log('Epic links defects count:', props.epic.links?.defects?.length || 0)
-    
     const epicTreeData = await apiService.getEpicTreeData(props.epic)
-    console.log('Epic tree data received:', epicTreeData)
-    console.log('Features in tree data:', epicTreeData.features?.length || 0)
-    console.log('Direct stories in tree data:', epicTreeData.directStories?.length || 0)
-    console.log('Direct tasks in tree data:', epicTreeData.directTasks?.length || 0)
-    console.log('Defects in tree data:', epicTreeData.defects?.length || 0)
     
     // Build tree structure
     const epicNode: TreeNode = {
@@ -159,16 +146,8 @@ const loadTreeData = async () => {
 
     treeData.value = [epicNode]
     
-    console.log('Built epic node:', epicNode)
-    console.log('Epic node children count:', epicNode.children?.length || 0)
-    console.log('Epic node children:', epicNode.children)
-    
     // Auto-expand first level
     openNodes.value = ['epic', ...epicNode.children!.map(child => child.id)]
-    console.log('Open nodes:', openNodes.value)
-    console.log('Open nodes type:', typeof openNodes.value)
-    console.log('Open nodes is array:', Array.isArray(openNodes.value))
-    console.log('=== EPIC TREE DEBUG END ===')
     
   } catch (err: unknown) {
     error.value = (err as Error).message || 'Failed to load tree data'
@@ -272,26 +251,8 @@ onMounted(() => {
 
       <!-- Tree view -->
       <div v-else>
-        <!-- Tree view debugging -->
-        <div class="mb-4">
-          <h4>V-Treeview Debug:</h4>
-          <p>Items count: {{ transformedTreeData.length }}</p>
-          <p>First item: {{ transformedTreeData[0]?.id }} - {{ transformedTreeData[0]?.title }}</p>
-          <p>First item children: {{ transformedTreeData[0]?.children?.length }}</p>
-        </div>
-        
-        <!-- Simple v-treeview test -->
-        <v-treeview
-          :items="transformedTreeData"
-          item-key="id"
-          item-title="title"
-          item-children="children"
-          open-all
-          class="epic-tree"
-        />
-        
-        <!-- Alternative: Custom nested tree with features and sub-artifacts -->
-        <div class="mt-4">
+        <!-- Epic Artifacts Tree -->
+        <div>
           <h4>Epic Artifacts Tree:</h4>
           <v-expansion-panels multiple variant="accordion">
             <v-expansion-panel
@@ -408,44 +369,6 @@ onMounted(() => {
             </v-expansion-panel>
           </v-expansion-panels>
         </div>
-        
-        <!-- Fallback manual list for debugging -->
-        <div class="mt-4">
-          <h4>Manual Children List (Debug):</h4>
-          <v-list v-if="treeData[0]?.children?.length > 0">
-            <v-list-item
-              v-for="child in treeData[0].children"
-              :key="child.id"
-              :prepend-icon="getTypeIcon(child.type)"
-            >
-              <v-list-item-title>{{ child.title }}</v-list-item-title>
-              <template #append>
-                <v-chip
-                  v-if="child.status"
-                  :color="getStatusColor(child.status)"
-                  size="x-small"
-                  variant="tonal"
-                >
-                  {{ child.status }}
-                </v-chip>
-              </template>
-            </v-list-item>
-          </v-list>
-        </div>
-      </div>
-      
-      <!-- Debug info -->
-      <div v-if="treeData.length > 0" class="mt-4 pa-4" style="background: #f5f5f5; border-radius: 8px;">
-        <h4>Debug Info:</h4>
-        <p>Tree data items: {{ treeData.length }}</p>
-        <p>Children in first item: {{ treeData[0]?.children?.length || 0 }}</p>
-        <p>Open nodes: {{ openNodes.length }}</p>
-        <p>First child ID: {{ treeData[0]?.children?.[0]?.id }}</p>
-        <p>First child title: {{ treeData[0]?.children?.[0]?.title }}</p>
-        <details>
-          <summary>Raw tree data (first 3 children)</summary>
-          <pre>{{ JSON.stringify(treeData[0]?.children?.slice(0, 3), null, 2) }}</pre>
-        </details>
       </div>
 
       <!-- Empty state -->

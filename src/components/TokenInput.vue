@@ -40,11 +40,10 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import { useAuth } from '@/composables/useAuth'
+import { useAuthStore } from '@/stores/auth'
 import { useRouter } from 'vue-router'
-import api from '@/services/api'
 
-const { setToken } = useAuth()
+const authStore = useAuthStore()
 const router = useRouter()
 
 const tokenInput = ref('')
@@ -65,12 +64,12 @@ const handleSubmit = async () => {
     await new Promise(resolve => setTimeout(resolve, 500)) // Simulate API call delay
     
     if (tokenInput.value.trim().length > 0) {
-      setToken(tokenInput.value)
+      authStore.setToken(tokenInput.value)
       router.push('/')
     } else {
       error.value = 'Token cannot be empty'
     }
-  } catch (err: any) {
+  } catch {
     error.value = 'Failed to validate token. Please try again.'
   } finally {
     loading.value = false
