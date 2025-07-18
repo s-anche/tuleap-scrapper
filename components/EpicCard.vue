@@ -42,7 +42,7 @@ const relatedArtifactsCount = computed(() => {
     class="epic-card h-100"
     elevation="2"
     hover
-    :to="{ name: 'epic-detail', params: { id: epic.id } }"
+    :to="`/epic/${epic.id}`"
   >
     <!-- Header with Status and ID -->
     <v-card-title class="d-flex align-center pa-4 pb-2">

@@ -16,6 +16,7 @@ export const useEpicStore = defineStore('epics', () => {
   const epics = ref<Epic[]>([])
   const loading = ref(false)
   const error = ref<string | null>(null)
+  const isHydrated = ref(false)
 
   const epicIdsList = computed(() => {
     return epicIds.value
@@ -30,6 +31,8 @@ export const useEpicStore = defineStore('epics', () => {
   })
 
   const loadFromStorage = () => {
+    if (!process.client) return false
+    
     try {
       const stored = localStorage.getItem(STORAGE_KEY)
       if (stored) {
@@ -45,6 +48,8 @@ export const useEpicStore = defineStore('epics', () => {
   }
 
   const saveToStorage = () => {
+    if (!process.client) return
+    
     try {
       const data: StoredEpicData = {
         epicIds: epicIds.value,
@@ -101,7 +106,9 @@ export const useEpicStore = defineStore('epics', () => {
     error.value = null
     
     // Clear from localStorage
-    localStorage.removeItem(STORAGE_KEY)
+    if (process.client) {
+      localStorage.removeItem(STORAGE_KEY)
+    }
   }
 
   const setEpicIds = (ids: string) => {
@@ -110,20 +117,26 @@ export const useEpicStore = defineStore('epics', () => {
     saveToStorage()
   }
 
-  // Initialize from localStorage on store creation
-  loadFromStorage()
+  const hydrate = () => {
+    if (process.client && !isHydrated.value) {
+      loadFromStorage()
+      isHydrated.value = true
+    }
+  }
 
   return {
     epicIds: computed(() => epicIds.value),
     epics: computed(() => epics.value),
     loading: computed(() => loading.value),
     error: computed(() => error.value),
+    isHydrated: computed(() => isHydrated.value),
     epicIdsList,
     isValidInput,
     loadEpics,
     clearEpics,
     setEpicIds,
     loadFromStorage,
-    saveToStorage
+    saveToStorage,
+    hydrate
   }
 })

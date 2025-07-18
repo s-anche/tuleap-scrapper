@@ -17,5 +17,10 @@
 
 <script setup lang="ts">
 import TokenInput from '@/components/TokenInput.vue'
-</script>
 
+// Set page meta - no auth required for login page
+definePageMeta({
+  middleware: 'guest',
+  layout: 'auth'
+})
+</script>

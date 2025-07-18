@@ -1,9 +1,14 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
 import { apiService } from '@/services/api'
 import type { Epic } from '@/types/api'
 import EpicTreeView from '@/components/EpicTreeView.vue'
+
+// Set page meta for authentication
+definePageMeta({
+  middleware: 'auth',
+  title: 'Epic Detail'
+})
 
 const route = useRoute()
 const router = useRouter()

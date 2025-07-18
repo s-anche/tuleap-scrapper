@@ -1,0 +1,29 @@
+/* Custom styles for the application */
+.v-application {
+  font-family: 'Roboto', sans-serif;
+}
+
+/* Ensure proper kanban layout */
+.kanban-board {
+  display: flex;
+  gap: 16px;
+  padding: 16px;
+  overflow-x: auto;
+}
+
+.kanban-column {
+  min-width: 300px;
+  flex: 0 0 auto;
+}
+
+/* Epic card styles */
+.epic-card {
+  margin-bottom: 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.epic-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.12);
+}

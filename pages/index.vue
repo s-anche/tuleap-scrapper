@@ -5,6 +5,12 @@ import { useEpicStore } from '@/stores/epics'
 import { storeToRefs } from 'pinia'
 import type { Epic } from '@/types/api'
 
+// Set page meta for authentication
+definePageMeta({
+  middleware: 'auth',
+  title: 'Dashboard'
+})
+
 // Use the epic store directly
 const epicStore = useEpicStore()
 const { epics, loading, error } = storeToRefs(epicStore)

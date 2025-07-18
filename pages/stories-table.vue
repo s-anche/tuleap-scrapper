@@ -182,6 +182,12 @@ import { useEpicStore } from '@/stores/epics'
 import { storeToRefs } from 'pinia'
 import { useStoriesTable, type TableRow } from '@/composables/useStoriesTable'
 
+// Set page meta for authentication
+definePageMeta({
+  middleware: 'auth',
+  title: 'Stories & Tasks'
+})
+
 // Store
 const epicStore = useEpicStore()
 const { epics, loading } = storeToRefs(epicStore)
@@ -310,7 +316,7 @@ const copyToClipboard = async () => {
     const tsvContent = allRows.map(row => row.join('\t')).join('\n')
     
     await navigator.clipboard.writeText(tsvContent)
-    console.log('Table data copied to clipboard')
+    // Table data copied to clipboard
   } catch (error) {
     console.error('Failed to copy to clipboard:', error)
   }

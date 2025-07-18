@@ -41,10 +41,8 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useAuthStore } from '@/stores/auth'
-import { useRouter } from 'vue-router'
 
 const authStore = useAuthStore()
-const router = useRouter()
 
 const tokenInput = ref('')
 const loading = ref(false)
@@ -65,7 +63,7 @@ const handleSubmit = async () => {
     
     if (tokenInput.value.trim().length > 0) {
       authStore.setToken(tokenInput.value)
-      router.push('/')
+      await navigateTo('/')
     } else {
       error.value = 'Token cannot be empty'
     }
