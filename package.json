@@ -5,13 +5,16 @@
   "type": "module",
   "scripts": {
     "dev": "nuxt dev",
+    "dev:mock": "cross-env NUXT_PUBLIC_TULEAP_API_URL=http://localhost:3001/api nuxt dev",
     "build": "nuxt build",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
     "type-check": "nuxt typecheck",
     "lint": "eslint . --fix",
     "format": "prettier --write .",
-    "generate": "nuxt generate"
+    "generate": "nuxt generate",
+    "mock:server": "npx --yes @mockoon/cli start --data ./mockoon/tuleap-api.json",
+    "mock:dev": "npm-run-all --parallel mock:server dev:mock"
   },
   "dependencies": {
     "@mdi/font": "^7.4.47",
@@ -28,12 +31,14 @@
     "vuetify": "^3.9.0"
   },
   "devDependencies": {
+    "@mockoon/cli": "^9.3.0",
     "@tsconfig/node22": "^22.0.2",
     "@types/node": "^22.15.32",
     "@vitejs/plugin-vue": "^6.0.0",
     "@vue/eslint-config-prettier": "^10.2.0",
     "@vue/eslint-config-typescript": "^14.5.1",
     "@vue/tsconfig": "^0.7.0",
+    "cross-env": "^7.0.3",
     "eslint": "^9.29.0",
     "eslint-plugin-vue": "~10.2.0",
     "jiti": "^2.4.2",

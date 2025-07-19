@@ -297,3 +297,25 @@ export interface ArtifactMetrics {
   status: string
   htmlUrl: string
 }
+
+export interface TuleapChangesetValue {
+  field_id: number
+  label: string
+  type: string
+  value?: any
+  values?: any[]
+  bind_value_ids?: any[]
+}
+
+export interface TuleapChangeset {
+  id: number
+  submitted_by: number
+  submitted_by_details: {
+    id: number
+    real_name: string
+    username: string
+    avatar_url: string
+  }
+  submitted_on: string
+  values: TuleapChangesetValue[]
+}

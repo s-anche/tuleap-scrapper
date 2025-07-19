@@ -21,12 +21,18 @@ Give project leads and developers a clean, real-time interface to:
 
 ## Development Commands
 
-- `npm run dev` - Start development server with hot reload
+### Standard Development
+- `npm run dev` - Start development server with real Tuleap API (requires VPN)
 - `npm run build` - Type-check and build for production
 - `npm run type-check` - Run TypeScript type checking with vue-tsc
 - `npm run lint` - Run ESLint with auto-fix
 - `npm run format` - Format code with Prettier
 - `npm run preview` - Preview production build locally
+
+### Local Development with Mock API (No VPN Required)
+- `npm run mock:server` - Start Mockoon mock server only
+- `npm run dev:mock` - Start development with mock Tuleap API
+- `npm run mock:dev` - Start both mock server and dev server in parallel (recommended)
 
 ## 🛠 Tech Stack
 
@@ -41,6 +47,30 @@ Give project leads and developers a clean, real-time interface to:
 | Build Tool       | Vite                     |
 | Auth             | Token (localStorage)     |
 | Deployment       | OpenShift (Docker)       |
+
+## 🧪 Local Development Setup
+
+### Using Mock API (No VPN Required)
+
+For local development without needing VPN access to the real Tuleap instance:
+
+1. **Quick Start**: `npm run mock:dev` - Starts both mock server and dev server
+2. **Manual Setup**:
+   - Copy `.env.example` to `.env` (optional)
+   - Set `NUXT_PUBLIC_TULEAP_API_URL=http://localhost:3001/api` in `.env`
+   - Run `npm run mock:server` in one terminal
+   - Run `npm run dev` in another terminal
+
+### Mock API Configuration
+
+- **Mock server**: Runs on `http://localhost:3001`
+- **Config file**: `mockoon/tuleap-api.json`
+- **Sample data**: Uses real examples from `exemple/` directory
+- **Endpoints**: All essential Tuleap API endpoints are mocked
+
+### Environment Variables
+
+- `NUXT_PUBLIC_TULEAP_API_URL` - API base URL (default: real Tuleap, set to `http://localhost:3001/api` for mock)
 
 ---
 

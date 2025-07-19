@@ -157,6 +157,13 @@
           <span v-else class="text-grey">—</span>
         </template>
 
+        <template v-slot:item.lastPointsModified="{ item }">
+          <span v-if="item.lastPointsModified" class="text-caption">
+            {{ new Date(item.lastPointsModified).toLocaleDateString() }}
+          </span>
+          <span v-else class="text-grey">Never</span>
+        </template>
+
         <template v-slot:item.sprint="{ item }">
           <v-chip v-if="item.sprint" color="info" variant="outlined" size="small">
             {{ item.sprint }}
@@ -219,6 +226,7 @@ const headers = [
   { title: 'Title', value: 'title', sortable: true },
   { title: 'Status', value: 'status', sortable: true, width: '150px' },
   { title: 'Points', value: 'points', sortable: true, width: '100px' },
+  { title: 'Last Points Modified', value: 'lastPointsModified', sortable: true, width: '180px' },
   { title: 'Sprint', value: 'sprint', sortable: true, width: '150px' },
 ]
 
@@ -375,13 +383,14 @@ const getStatusColor = (status: string) => {
 
 const copyToClipboard = async () => {
   try {
-    const headerRow = ['ID', 'Parent ID', 'Title', 'Status', 'Points', 'Sprint', 'Type', 'URL']
+    const headerRow = ['ID', 'Parent ID', 'Title', 'Status', 'Points', 'Last Points Modified', 'Sprint', 'Type', 'URL']
     const dataRows = filteredRows.value.map((row) => [
       row.id,
       row.parentId || '',
       row.title,
       row.status,
       row.points || '',
+      row.lastPointsModified ? new Date(row.lastPointsModified).toLocaleDateString() : 'Never',
       row.sprint || '',
       row.type,
       row.htmlUrl,

@@ -1,0 +1,252 @@
+{
+  "uuid": "tuleap-mock-api",
+  "lastMigration": 33,
+  "name": "Tuleap Mock API",
+  "endpointPrefix": "",
+  "latency": 100,
+  "port": 3001,
+  "hostname": "localhost",
+  "folders": [],
+  "routes": [
+    {
+      "uuid": "projects-list",
+      "type": "http",
+      "documentation": "Get list of projects",
+      "method": "get",
+      "endpoint": "api/projects",
+      "responses": [
+        {
+          "uuid": "projects-response",
+          "body": "{\n  \"collection\": [\n    {\n      \"id\": 128,\n      \"uri\": \"projects/128\",\n      \"label\": \"Softway Medical Program\",\n      \"icon\": \"🏢\",\n      \"status\": \"active\",\n      \"is_public\": false\n    },\n    {\n      \"id\": 129,\n      \"uri\": \"projects/129\",\n      \"label\": \"Test Project\",\n      \"icon\": \"🧪\",\n      \"status\": \"active\",\n      \"is_public\": true\n    }\n  ]\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null
+    },
+    {
+      "uuid": "project-trackers",
+      "type": "http",
+      "documentation": "Get trackers for a specific project",
+      "method": "get",
+      "endpoint": "api/projects/:id/trackers",
+      "responses": [
+        {
+          "uuid": "trackers-response",
+          "body": "{\n  \"collection\": [\n    {\n      \"id\": 205,\n      \"uri\": \"trackers/205\",\n      \"label\": \"Epics\",\n      \"color_name\": \"surf-green\",\n      \"project\": {\n        \"id\": 128,\n        \"uri\": \"projects/128\",\n        \"label\": \"Softway Medical Program\",\n        \"icon\": \"🏢\"\n      },\n      \"cannot_create_reasons\": null\n    },\n    {\n      \"id\": 206,\n      \"uri\": \"trackers/206\",\n      \"label\": \"Features\",\n      \"color_name\": \"blue-200\",\n      \"project\": {\n        \"id\": 128,\n        \"uri\": \"projects/128\",\n        \"label\": \"Softway Medical Program\",\n        \"icon\": \"🏢\"\n      },\n      \"cannot_create_reasons\": null\n    },\n    {\n      \"id\": 207,\n      \"uri\": \"trackers/207\",\n      \"label\": \"Stories\",\n      \"color_name\": \"orange-400\",\n      \"project\": {\n        \"id\": 128,\n        \"uri\": \"projects/128\",\n        \"label\": \"Softway Medical Program\",\n        \"icon\": \"🏢\"\n      },\n      \"cannot_create_reasons\": null\n    }\n  ]\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null
+    },
+    {
+      "uuid": "tracker-artifacts",
+      "type": "http",
+      "documentation": "Get artifacts for a specific tracker",
+      "method": "get",
+      "endpoint": "api/trackers/:id/artifacts",
+      "responses": [
+        {
+          "uuid": "artifacts-response",
+          "body": "{\n  \"collection\": [\n    {\n      \"id\": 416725,\n      \"uri\": \"artifacts/416725\",\n      \"xref\": \"epic #416725\",\n      \"title\": \"Sample Epic\",\n      \"tracker\": {\n        \"id\": 205,\n        \"uri\": \"trackers/205\",\n        \"label\": \"Epics\",\n        \"color_name\": \"surf-green\"\n      },\n      \"project\": {\n        \"id\": 128,\n        \"uri\": \"projects/128\",\n        \"label\": \"Softway Medical Program\",\n        \"icon\": \"🏢\"\n      },\n      \"status\": \"Open\",\n      \"submitted_on\": \"2024-10-11T09:38:52+02:00\",\n      \"html_url\": \"/plugins/tracker/?aid=416725\"\n    },\n    {\n      \"id\": 416726,\n      \"uri\": \"artifacts/416726\",\n      \"xref\": \"epic #416726\",\n      \"title\": \"Another Epic\",\n      \"tracker\": {\n        \"id\": 205,\n        \"uri\": \"trackers/205\",\n        \"label\": \"Epics\",\n        \"color_name\": \"surf-green\"\n      },\n      \"project\": {\n        \"id\": 128,\n        \"uri\": \"projects/128\",\n        \"label\": \"Softway Medical Program\",\n        \"icon\": \"🏢\"\n      },\n      \"status\": \"In Progress\",\n      \"submitted_on\": \"2024-10-12T14:22:15+02:00\",\n      \"html_url\": \"/plugins/tracker/?aid=416726\"\n    }\n  ]\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null
+    },
+    {
+      "uuid": "artifact-by-id",
+      "type": "http",
+      "documentation": "Get a specific artifact by ID",
+      "method": "get",
+      "endpoint": "api/artifacts/:id",
+      "responses": [
+        {
+          "uuid": "artifact-response",
+          "body": "{{ bodyRaw 'getArtifactById' }}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "bodyType": "DATABUCKET",
+          "filePath": "",
+          "databucketID": "artifact-data",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null
+    },
+    {
+      "uuid": "linked-artifacts",
+      "type": "http",
+      "documentation": "Get linked artifacts for a specific artifact",
+      "method": "get",
+      "endpoint": "api/artifacts/:id/linked_artifacts",
+      "responses": [
+        {
+          "uuid": "linked-artifacts-response",
+          "body": "{\n  \"collection\": [\n    {\n      \"id\": 541832,\n      \"uri\": \"artifacts/541832\",\n      \"xref\": \"feature #541832\",\n      \"title\": \"Sample Feature\",\n      \"tracker\": {\n        \"id\": 643,\n        \"uri\": \"trackers/643\",\n        \"label\": \"Features\",\n        \"color_name\": \"blue-200\"\n      },\n      \"project\": {\n        \"id\": 128,\n        \"uri\": \"projects/128\",\n        \"label\": \"Softway Medical Program\",\n        \"icon\": \"🏢\"\n      },\n      \"status\": \"Open\",\n      \"submitted_on\": \"2024-10-11T10:15:30+02:00\",\n      \"html_url\": \"/plugins/tracker/?aid=541832\",\n      \"values\": [\n        {\n          \"field_id\": 19574,\n          \"label\": \"Points\",\n          \"type\": \"sb\",\n          \"value\": 8\n        }\n      ]\n    },\n    {\n      \"id\": 541833,\n      \"uri\": \"artifacts/541833\",\n      \"xref\": \"story #541833\",\n      \"title\": \"Sample Story\",\n      \"tracker\": {\n        \"id\": 644,\n        \"uri\": \"trackers/644\",\n        \"label\": \"Stories\",\n        \"color_name\": \"orange-400\"\n      },\n      \"project\": {\n        \"id\": 128,\n        \"uri\": \"projects/128\",\n        \"label\": \"Softway Medical Program\",\n        \"icon\": \"🏢\"\n      },\n      \"status\": \"Done\",\n      \"submitted_on\": \"2024-10-11T11:30:45+02:00\",\n      \"html_url\": \"/plugins/tracker/?aid=541833\",\n      \"values\": [\n        {\n          \"field_id\": 19574,\n          \"label\": \"Points\",\n          \"type\": \"sb\",\n          \"value\": 3\n        }\n      ]\n    }\n  ]\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null
+    }
+  ],
+  "rootChildren": [
+    {
+      "type": "route",
+      "uuid": "projects-list"
+    },
+    {
+      "type": "route",
+      "uuid": "project-trackers"
+    },
+    {
+      "type": "route",
+      "uuid": "tracker-artifacts"
+    },
+    {
+      "type": "route",
+      "uuid": "artifact-by-id"
+    },
+    {
+      "type": "route",
+      "uuid": "linked-artifacts"
+    }
+  ],
+  "proxyMode": false,
+  "proxyHost": "",
+  "proxyRemovePrefix": false,
+  "tlsOptions": {
+    "enabled": false,
+    "type": "CERT",
+    "pfxPath": "",
+    "certPath": "",
+    "keyPath": "",
+    "caPath": "",
+    "passphrase": ""
+  },
+  "cors": true,
+  "headers": [
+    {
+      "key": "Access-Control-Allow-Origin",
+      "value": "*"
+    },
+    {
+      "key": "Access-Control-Allow-Methods",
+      "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+    },
+    {
+      "key": "Access-Control-Allow-Headers",
+      "value": "Content-Type,Origin,Accept,Authorization,Content-Length,X-Requested-With,X-Auth-AccessKey"
+    }
+  ],
+  "proxyReqHeaders": [
+    {
+      "key": "",
+      "value": ""
+    }
+  ],
+  "proxyResHeaders": [
+    {
+      "key": "",
+      "value": ""
+    }
+  ],
+  "data": [
+    {
+      "uuid": "artifact-data",
+      "name": "getArtifactById",
+      "documentation": "Sample artifact data from exemple/getArtifactById.json",
+      "value": "{\n  \"id\": 416725,\n  \"uri\": \"artifacts/416725\",\n  \"xref\": \"epic #416725\",\n  \"tracker\": {\n    \"id\": 205,\n    \"uri\": \"trackers/205\",\n    \"label\": \"Epics\",\n    \"color_name\": \"surf-green\",\n    \"project\": {\n      \"id\": 128,\n      \"uri\": \"projects/128\",\n      \"label\": \"Softway Medical Program\",\n      \"icon\": \"🏢\"\n    },\n    \"cannot_create_reasons\": null\n  },\n  \"project\": {\n    \"id\": 128,\n    \"uri\": \"projects/128\",\n    \"label\": \"Softway Medical Program\",\n    \"icon\": \"🏢\"\n  },\n  \"submitted_by\": 210,\n  \"submitted_by_user\": {\n    \"id\": 210,\n    \"uri\": \"users/210\",\n    \"user_url\": \"/users/wdegryse\",\n    \"real_name\": \"DEGRYSE William\",\n    \"display_name\": \"DEGRYSE William (wdegryse)\",\n    \"username\": \"wdegryse\",\n    \"ldap_id\": \"wdegryse\",\n    \"avatar_url\": \"https://tuleap-web.swmcloud.net/users/wdegryse/avatar.png\",\n    \"is_anonymous\": false,\n    \"has_avatar\": true\n  },\n  \"submitted_on\": \"2024-10-11T09:38:52+02:00\",\n  \"html_url\": \"/plugins/tracker/?aid=416725\",\n  \"changesets_uri\": \"artifacts/416725/changesets\",\n  \"title\": \"Sample Epic Title\",\n  \"status\": \"Open\",\n  \"values\": [\n    {\n      \"field_id\": 5685,\n      \"label\": \"Links\",\n      \"type\": \"art_link\",\n      \"links\": [\n        {\n          \"id\": 541832,\n          \"uri\": \"artifacts/541832\",\n          \"tracker\": {\n            \"id\": 643,\n            \"uri\": \"trackers/643\",\n            \"label\": \"Features\"\n          }\n        }\n      ]\n    },\n    {\n      \"field_id\": 5697,\n      \"label\": \"Summary\",\n      \"type\": \"text\",\n      \"value\": \"This is a sample epic for testing\"\n    }\n  ]\n}"
+    }
+  ],
+  "callbacks": []
+}

@@ -34,7 +34,8 @@ export default defineNuxtConfig({
     databaseUrl: process.env.DATABASE_URL,
     // Public keys (exposed to client-side)
     public: {
-      apiBase: process.env.NUXT_PUBLIC_API_BASE || '/api'
+      apiBase: process.env.NUXT_PUBLIC_API_BASE || '/api',
+      tuleapApiUrl: process.env.NUXT_PUBLIC_TULEAP_API_URL || 'https://tuleap-web.swmcloud.net/api'
     }
   },
 

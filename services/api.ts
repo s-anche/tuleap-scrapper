@@ -6,13 +6,21 @@ import type {
   TuleapArtifact,
   TuleapArtifactLink,
   TuleapArtifactValue,
+  TuleapChangeset,
   QueryParams,
   ProjectQuery,
   TrackerQuery,
   ArtifactQuery,
 } from '@/types/api'
 
-const baseURL = 'https://tuleap-web.swmcloud.net/api'
+// Get base URL from runtime config, fallback to production URL
+const getBaseURL = (): string => {
+  if (process.client) {
+    const config = useRuntimeConfig()
+    return config.public.tuleapApiUrl
+  }
+  return process.env.NUXT_PUBLIC_TULEAP_API_URL || 'https://tuleap-web.swmcloud.net/api'
+}
 
 // Helper function to get auth headers
 const getAuthHeaders = (): Record<string, string> => {
@@ -35,9 +43,15 @@ const apiRequest = async <T>(endpoint: string, options: any = {}): Promise<T> =>
   }
 
   try {
-    const response = await $fetch<T>(`${baseURL}${endpoint}`, fetchOptions)
+    const response = await $fetch<T>(`${getBaseURL()}${endpoint}`, fetchOptions)
     return response
   } catch (error: any) {
+    console.error(`❌ API Request failed: ${getBaseURL()}${endpoint}`, {
+      status: error.statusCode,
+      message: error.message,
+      data: error.data
+    })
+    
     if (error.statusCode === 401) {
       if (process.client) {
         localStorage.removeItem('tuleap_token')
@@ -451,6 +465,115 @@ export const apiService = {
     }
 
     return results
+  },
+
+  // Method to fetch artifact changesets
+  async getArtifactChangesets(artifactId: number): Promise<TuleapChangeset[]> {
+    console.log(`🔄 Fetching changesets for artifact ${artifactId}`)
+    
+    // First verify that the artifact exists
+    try {
+      const artifact = await this.getArtifact(artifactId)
+      console.log(`✅ Artifact ${artifactId} exists:`, artifact.title)
+    } catch (error) {
+      console.error(`❌ Artifact ${artifactId} not found or not accessible:`, error)
+      return []
+    }
+    
+    try {
+      const allChangesets: TuleapChangeset[] = []
+      let offset = 0
+      const limit = 50
+      let hasMore = true
+
+      while (hasMore) {
+        console.log(`📡 API call: /artifacts/${artifactId}/changesets?fields=all&limit=${limit}&offset=${offset}&order=asc`)
+        const response = await apiRequest<TuleapChangeset[] | { collection: TuleapChangeset[] }>(
+          `/artifacts/${artifactId}/changesets`,
+          {
+            method: 'GET',
+            query: {
+              fields: 'all',
+              limit,
+              offset,
+              order: 'asc',
+            },
+          },
+        )
+
+        // Handle both direct array and collection wrapper formats
+        const changesets = Array.isArray(response) ? response : (response.collection || [])
+        console.log(`📦 Received ${changesets.length} changesets`)
+        if (changesets.length > 0) {
+          console.log(`📋 Sample changeset:`, changesets[0])
+        }
+        allChangesets.push(...changesets)
+
+        hasMore = changesets.length === limit
+        offset += limit
+      }
+
+      console.log(`✅ Total changesets fetched: ${allChangesets.length}`)
+      return allChangesets
+    } catch (error) {
+      console.error(`❌ Error fetching changesets for artifact ${artifactId}:`, error)
+      return []
+    }
+  },
+
+  // Utility function to find the last modification date of points field
+  findLastPointsModification(changesets: TuleapChangeset[]): string | null {
+    console.log('🔍 Analyzing changesets for points modification:', changesets.length, 'changesets')
+    
+    if (changesets.length === 0) {
+      console.log('❌ No changesets found')
+      return null
+    }
+
+    let lastModifiedDate: string | null = null
+    let previousPointsValue: any = null
+
+    for (const changeset of changesets) {
+      const pointsField = changeset.values.find(
+        (value) => value.label === 'Points' || value.field_id === 19574
+      )
+
+      if (pointsField) {
+        console.log('📊 Found Points field in changeset:', changeset.submitted_on, {
+          values: pointsField.values,
+          bind_value_ids: pointsField.bind_value_ids
+        })
+
+        const currentPointsValue = {
+          values: pointsField.values || [],
+          bind_value_ids: pointsField.bind_value_ids || [],
+        }
+
+        // Check if this is the first changeset with points field
+        if (previousPointsValue === null) {
+          // If the field has values, this is when points were first set
+          if (currentPointsValue.values.length > 0 || currentPointsValue.bind_value_ids.length > 0) {
+            console.log('✅ First points assignment detected:', changeset.submitted_on)
+            lastModifiedDate = changeset.submitted_on
+          }
+        } else {
+          // Compare with previous changeset
+          const valuesChanged = 
+            JSON.stringify(currentPointsValue.values) !== JSON.stringify(previousPointsValue.values) ||
+            JSON.stringify(currentPointsValue.bind_value_ids) !== JSON.stringify(previousPointsValue.bind_value_ids)
+
+          if (valuesChanged) {
+            console.log('🔄 Points change detected:', changeset.submitted_on, 'from:', previousPointsValue, 'to:', currentPointsValue)
+            lastModifiedDate = changeset.submitted_on
+          }
+        }
+
+        previousPointsValue = currentPointsValue
+      }
+    }
+
+    console.log('🎯 Final result for points modification:', lastModifiedDate)
+    return lastModifiedDate
   },
 
   // Method to fetch hierarchical tree data for epic
