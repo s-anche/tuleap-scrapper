@@ -32,6 +32,34 @@
         >
           Total: {{ totalPoints }} pts
         </v-chip>
+        <!-- Points Processing Controls -->
+        <v-chip
+          v-if="processingState.isProcessing"
+          color="info"
+          variant="tonal"
+          size="large"
+          class="text-subtitle-1"
+        >
+          <v-progress-circular
+            indeterminate
+            color="info"
+            size="16"
+            width="2"
+            class="mr-2"
+          />
+          Loading {{ processingState.processedItems + processingState.failedItems }}/{{ processingState.totalItems }} points
+        </v-chip>
+        
+        <v-btn
+          @click="toggleProcessing(!processingState.isEnabled)"
+          :color="processingState.isEnabled ? 'success' : 'grey'"
+          variant="outlined"
+          size="small"
+          :prepend-icon="processingState.isEnabled ? 'mdi-history' : 'mdi-history-off'"
+        >
+          Points History
+        </v-btn>
+        
         <v-btn
           v-if="tableRows.length > 0"
           @click="copyToClipboard"
@@ -158,7 +186,21 @@
         </template>
 
         <template v-slot:item.lastPointsModified="{ item }">
-          <span v-if="item.lastPointsModified" class="text-caption">
+          <div v-if="item.lastPointsModified === 'loading'" class="d-flex align-center">
+            <v-progress-circular
+              indeterminate
+              color="primary"
+              size="16"
+              width="2"
+              class="mr-2"
+            />
+            <span class="text-caption text-grey">Loading...</span>
+          </div>
+          <div v-else-if="item.lastPointsModified === 'error'" class="d-flex align-center">
+            <v-icon color="error" size="small" class="mr-1">mdi-alert-circle</v-icon>
+            <span class="text-caption text-error">Failed</span>
+          </div>
+          <span v-else-if="item.lastPointsModified" class="text-caption">
             {{ new Date(item.lastPointsModified).toLocaleDateString() }}
           </span>
           <span v-else class="text-grey">Never</span>
@@ -192,10 +234,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import { useEpicStore } from '@/stores/epics'
 import { storeToRefs } from 'pinia'
 import { useStoriesTable, type TableRow } from '@/composables/useStoriesTable'
+import { useBackgroundPointsProcessor } from '@/composables/useBackgroundPointsProcessor'
 import BurnupChart from '@/components/BurnupChart.vue'
 
 // Set page meta for authentication
@@ -210,6 +253,12 @@ const { epics, loading } = storeToRefs(epicStore)
 
 // Composables
 const { flattenEpicTreeData } = useStoriesTable()
+const { processingState, startProcessing, toggleProcessing, initializeSettings } = useBackgroundPointsProcessor()
+
+// Initialize settings on mount
+onMounted(() => {
+  initializeSettings()
+})
 
 // Table state
 const search = ref('')
@@ -238,6 +287,11 @@ watch(
       tableLoading.value = true
       try {
         tableRows.value = await flattenEpicTreeData(newEpics)
+        
+        // Start background processing for points modification dates
+        if (processingState.isEnabled) {
+          startProcessing(tableRows.value)
+        }
         
       } catch (error) {
         console.error('Error flattening epic tree data:', error)

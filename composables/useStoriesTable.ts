@@ -4,9 +4,6 @@ import { apiService } from '@/services/api'
 // Cache for last points modification dates to avoid repeated API calls
 const pointsModificationCache = new Map<number, string | null>()
 
-// Debug flag to bypass cache
-const DEBUG_BYPASS_CACHE = true
-
 // Table row interface
 export interface TableRow {
   id: number
@@ -18,7 +15,7 @@ export interface TableRow {
   sprint: string | null
   type: 'story' | 'task' | 'defect'
   htmlUrl: string
-  lastPointsModified: string | null
+  lastPointsModified: string | null | 'loading' | 'error'
 }
 
 export const useStoriesTable = () => {
@@ -77,30 +74,8 @@ export const useStoriesTable = () => {
       type = 'defect'
     }
     
-    // Get last points modification date with caching
-    let lastPointsModified: string | null = null
-    console.log(`🎯 Processing artifact ${artifact.id} for points modification`)
-    
-    if (!DEBUG_BYPASS_CACHE && pointsModificationCache.has(artifact.id)) {
-      lastPointsModified = pointsModificationCache.get(artifact.id)!
-      console.log(`🎯 Using cached result for artifact ${artifact.id}:`, lastPointsModified)
-    } else {
-      try {
-        console.log(`🎯 Fetching changesets for artifact ${artifact.id}`)
-        const changesets = await apiService.getArtifactChangesets(artifact.id)
-        lastPointsModified = apiService.findLastPointsModification(changesets)
-        if (!DEBUG_BYPASS_CACHE) {
-          pointsModificationCache.set(artifact.id, lastPointsModified)
-        }
-        console.log(`🎯 Computed result for artifact ${artifact.id}:`, lastPointsModified)
-      } catch (error) {
-        console.error(`❌ Error fetching points modification date for artifact ${artifact.id}:`, error)
-        lastPointsModified = null
-        if (!DEBUG_BYPASS_CACHE) {
-          pointsModificationCache.set(artifact.id, null)
-        }
-      }
-    }
+    // Initialize with loading state - will be processed in background
+    const lastPointsModified: string | null = 'loading'
     
     return {
       id: artifact.id,

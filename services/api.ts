@@ -467,68 +467,48 @@ export const apiService = {
     return results
   },
 
-  // Method to fetch artifact changesets
+  // Method to fetch artifact changesets (optimized for points tracking)
   async getArtifactChangesets(artifactId: number): Promise<TuleapChangeset[]> {
-    console.log(`🔄 Fetching changesets for artifact ${artifactId}`)
-    
-    // First verify that the artifact exists
-    try {
-      const artifact = await this.getArtifact(artifactId)
-      console.log(`✅ Artifact ${artifactId} exists:`, artifact.title)
-    } catch (error) {
-      console.error(`❌ Artifact ${artifactId} not found or not accessible:`, error)
-      return []
-    }
-    
     try {
       const allChangesets: TuleapChangeset[] = []
       let offset = 0
-      const limit = 50
+      const limit = 30 // Reduced from 50 to limit payload
+      const maxChangesets = 30 // Only fetch recent changesets for performance
       let hasMore = true
 
-      while (hasMore) {
-        console.log(`📡 API call: /artifacts/${artifactId}/changesets?fields=all&limit=${limit}&offset=${offset}&order=asc`)
+      while (hasMore && allChangesets.length < maxChangesets) {
         const response = await apiRequest<TuleapChangeset[] | { collection: TuleapChangeset[] }>(
           `/artifacts/${artifactId}/changesets`,
           {
             method: 'GET',
             query: {
-              fields: 'all',
+              // Remove 'fields=all' to reduce payload size
               limit,
               offset,
-              order: 'asc',
+              order: 'desc', // Get most recent first
             },
           },
         )
 
         // Handle both direct array and collection wrapper formats
         const changesets = Array.isArray(response) ? response : (response.collection || [])
-        console.log(`📦 Received ${changesets.length} changesets`)
-        if (changesets.length > 0) {
-          console.log(`📋 Sample changeset:`, changesets[0])
-        }
         allChangesets.push(...changesets)
 
         hasMore = changesets.length === limit
         offset += limit
       }
 
-      console.log(`✅ Total changesets fetched: ${allChangesets.length}`)
-      return allChangesets
+      // Reverse to get chronological order for analysis
+      return allChangesets.reverse()
     } catch (error) {
-      console.error(`❌ Error fetching changesets for artifact ${artifactId}:`, error)
+      console.error(`Error fetching changesets for artifact ${artifactId}:`, error)
       return []
     }
   },
 
   // Utility function to find the last modification date of points field
   findLastPointsModification(changesets: TuleapChangeset[]): string | null {
-    console.log('🔍 Analyzing changesets for points modification:', changesets.length, 'changesets')
-    
-    if (changesets.length === 0) {
-      console.log('❌ No changesets found')
-      return null
-    }
+    if (changesets.length === 0) return null
 
     let lastModifiedDate: string | null = null
     let previousPointsValue: any = null
@@ -539,11 +519,6 @@ export const apiService = {
       )
 
       if (pointsField) {
-        console.log('📊 Found Points field in changeset:', changeset.submitted_on, {
-          values: pointsField.values,
-          bind_value_ids: pointsField.bind_value_ids
-        })
-
         const currentPointsValue = {
           values: pointsField.values || [],
           bind_value_ids: pointsField.bind_value_ids || [],
@@ -553,7 +528,6 @@ export const apiService = {
         if (previousPointsValue === null) {
           // If the field has values, this is when points were first set
           if (currentPointsValue.values.length > 0 || currentPointsValue.bind_value_ids.length > 0) {
-            console.log('✅ First points assignment detected:', changeset.submitted_on)
             lastModifiedDate = changeset.submitted_on
           }
         } else {
@@ -563,7 +537,6 @@ export const apiService = {
             JSON.stringify(currentPointsValue.bind_value_ids) !== JSON.stringify(previousPointsValue.bind_value_ids)
 
           if (valuesChanged) {
-            console.log('🔄 Points change detected:', changeset.submitted_on, 'from:', previousPointsValue, 'to:', currentPointsValue)
             lastModifiedDate = changeset.submitted_on
           }
         }
@@ -572,7 +545,6 @@ export const apiService = {
       }
     }
 
-    console.log('🎯 Final result for points modification:', lastModifiedDate)
     return lastModifiedDate
   },
 
