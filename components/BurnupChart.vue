@@ -40,7 +40,21 @@
                   <div class="text-subtitle-2 mb-2">Chart Legend</div>
                   <div class="d-flex align-center mb-1">
                     <div class="legend-color total-scope mr-2"></div>
-                    <span class="text-body-2">Total Scope - Cumulative story points across sprints</span>
+                    <span class="text-body-2">Total Scope (Ideal) - If all points were known from start</span>
+                  </div>
+                  <div v-if="chartData.hasEstimatedScope" class="d-flex align-center mb-1">
+                    <div class="legend-color estimated-scope mr-2"></div>
+                    <span class="text-body-2">Estimated Scope (Actual) - Points estimated during each sprint</span>
+                  </div>
+                  <div v-else class="d-flex align-center mb-1">
+                    <v-progress-circular
+                      indeterminate
+                      color="orange"
+                      size="16"
+                      width="2"
+                      class="mr-2"
+                    />
+                    <span class="text-body-2 text-grey">Estimated Scope - Loading estimation timeline...</span>
                   </div>
                   <div class="d-flex align-center">
                     <div class="legend-color completed mr-2"></div>
@@ -56,6 +70,7 @@
                   <div class="text-body-2">
                     <div>Total Sprints: {{ chartData.labels.length }}</div>
                     <div>Points Calculation: Uses mean story points ({{ meanPoints.toFixed(1) }} pts) for items without explicit points</div>
+                    <div>Estimation Timeline: Based on actual dates when points were assigned/modified</div>
                     <div>Status: Items marked as "Done", "Closed", or "Completed" are considered finished</div>
                   </div>
                 </v-card-text>
@@ -169,6 +184,10 @@ watch(
 
 .legend-color.total-scope {
   background-color: #1976D2;
+}
+
+.legend-color.estimated-scope {
+  background-color: #FF9800;
 }
 
 .legend-color.completed {

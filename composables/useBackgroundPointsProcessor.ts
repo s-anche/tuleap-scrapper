@@ -138,7 +138,18 @@ export const useBackgroundPointsProcessor = () => {
 
   // Start processing for a set of rows
   const startProcessing = (rows: TableRow[]) => {
-    if (!processingState.isEnabled) return
+    console.log(`🎯 startProcessing called with ${rows.length} rows, enabled: ${processingState.isEnabled}`)
+    
+    if (!processingState.isEnabled) {
+      console.log('❌ Processing disabled, skipping')
+      return
+    }
+
+    // Debug: log the state of lastPointsModified for first few rows
+    console.log('📊 Sample row states:', rows.slice(0, 3).map(row => ({
+      id: row.id,
+      lastPointsModified: row.lastPointsModified
+    })))
 
     // Filter rows that need processing (loading state and not in cache)
     const rowsToProcess = rows.filter(row => {
@@ -147,11 +158,14 @@ export const useBackgroundPointsProcessor = () => {
       return cached === undefined
     })
 
+    console.log(`🔍 Found ${rowsToProcess.length} rows to process out of ${rows.length} total`)
+
     if (rowsToProcess.length === 0) {
       console.log('🎯 No artifacts need points processing')
       return
     }
 
+    console.log(`🚀 Starting background processing for ${rowsToProcess.length} artifacts`)
     processingQueue.value = rowsToProcess
     processQueue()
   }

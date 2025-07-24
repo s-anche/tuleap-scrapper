@@ -32,33 +32,6 @@
         >
           Total: {{ totalPoints }} pts
         </v-chip>
-        <!-- Points Processing Controls -->
-        <v-chip
-          v-if="processingState.isProcessing"
-          color="info"
-          variant="tonal"
-          size="large"
-          class="text-subtitle-1"
-        >
-          <v-progress-circular
-            indeterminate
-            color="info"
-            size="16"
-            width="2"
-            class="mr-2"
-          />
-          Loading {{ processingState.processedItems + processingState.failedItems }}/{{ processingState.totalItems }} points
-        </v-chip>
-        
-        <v-btn
-          @click="toggleProcessing(!processingState.isEnabled)"
-          :color="processingState.isEnabled ? 'success' : 'grey'"
-          variant="outlined"
-          size="small"
-          :prepend-icon="processingState.isEnabled ? 'mdi-history' : 'mdi-history-off'"
-        >
-          Points History
-        </v-btn>
         
         <v-btn
           v-if="tableRows.length > 0"
@@ -219,7 +192,7 @@
     <!-- Loading State -->
     <v-card v-else-if="isLoading" class="text-center pa-12">
       <v-progress-circular indeterminate color="primary" size="64" />
-      <p class="text-h6 mt-4">Loading stories and tasks...</p>
+      <p class="text-h6 mt-4">Loading stories, tasks and changesets...</p>
     </v-card>
 
     <!-- Empty State -->
@@ -234,11 +207,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { useEpicStore } from '@/stores/epics'
 import { storeToRefs } from 'pinia'
 import { useStoriesTable, type TableRow } from '@/composables/useStoriesTable'
-import { useBackgroundPointsProcessor } from '@/composables/useBackgroundPointsProcessor'
 import BurnupChart from '@/components/BurnupChart.vue'
 
 // Set page meta for authentication
@@ -253,12 +225,6 @@ const { epics, loading } = storeToRefs(epicStore)
 
 // Composables
 const { flattenEpicTreeData } = useStoriesTable()
-const { processingState, startProcessing, toggleProcessing, initializeSettings } = useBackgroundPointsProcessor()
-
-// Initialize settings on mount
-onMounted(() => {
-  initializeSettings()
-})
 
 // Table state
 const search = ref('')
@@ -287,11 +253,6 @@ watch(
       tableLoading.value = true
       try {
         tableRows.value = await flattenEpicTreeData(newEpics)
-        
-        // Start background processing for points modification dates
-        if (processingState.isEnabled) {
-          startProcessing(tableRows.value)
-        }
         
       } catch (error) {
         console.error('Error flattening epic tree data:', error)

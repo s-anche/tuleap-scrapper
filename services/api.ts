@@ -62,8 +62,17 @@ const apiRequest = async <T>(endpoint: string, options: any = {}): Promise<T> =>
   }
 }
 
-// Sprint cache for performance optimization
+// Sprint data interface with dates
+interface SprintData {
+  id: number
+  title: string
+  startDate: string | null
+  endDate: string | null
+}
+
+// Sprint cache for performance optimization  
 const sprintCache = new Map<number, Artifact>()
+const sprintDataCache = new Map<number, SprintData>()
 
 // Real API Service Methods
 export const apiService = {
@@ -311,6 +320,19 @@ export const apiService = {
     return field?.value || field?.values?.[0]?.label || null
   },
 
+  // Extract sprint data with dates from sprint artifact
+  extractSprintData(sprintArtifact: Artifact): SprintData {
+    const startDate = this.extractFieldValue(sprintArtifact, 'Start Date') as string | null
+    const endDate = this.extractFieldValue(sprintArtifact, 'End Date') as string | null
+    
+    return {
+      id: sprintArtifact.id,
+      title: sprintArtifact.title || `Sprint ${sprintArtifact.id}`,
+      startDate,
+      endDate
+    }
+  },
+
   extractPoints(artifact: TuleapArtifact): number | null {
     const points =
       this.extractFieldValue(artifact, 'Points') ||
@@ -370,6 +392,10 @@ export const apiService = {
 
         // Cache the result
         sprintCache.set(sprintLink.id, sprintArtifact)
+        
+        // Extract and cache sprint data with dates
+        const sprintData = this.extractSprintData(sprintArtifact)
+        sprintDataCache.set(sprintLink.id, sprintData)
 
         return sprintArtifact.title || null
       } catch (error) {
@@ -379,6 +405,29 @@ export const apiService = {
     }
 
     return null
+  },
+
+  // Get all cached sprint data
+  getAllSprintData(): SprintData[] {
+    return Array.from(sprintDataCache.values())
+  },
+
+  // Map a date to a sprint based on sprint start/end dates
+  mapDateToSprint(date: string): string | null {
+    const targetDate = new Date(date)
+    
+    for (const sprintData of sprintDataCache.values()) {
+      if (!sprintData.startDate || !sprintData.endDate) continue
+      
+      const startDate = new Date(sprintData.startDate)
+      const endDate = new Date(sprintData.endDate)
+      
+      if (targetDate >= startDate && targetDate <= endDate) {
+        return sprintData.title
+      }
+    }
+    
+    return null // Date doesn't fall within any known sprint
   },
 
   // Method to fetch linked artifacts using the optimized endpoint with pagination
