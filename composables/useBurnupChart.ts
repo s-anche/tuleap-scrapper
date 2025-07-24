@@ -2,10 +2,10 @@ import type { TableRow } from '@/composables/useStoriesTable'
 import { apiService } from '@/services/api'
 
 export interface BurnupChartData {
-  labels: string[]
+  labels?: string[] // Keep for backward compatibility 
   datasets: Array<{
     label: string
-    data: number[]
+    data: Array<{ x: string | Date, y: number }> // Change to support date-based data points
     borderColor: string
     backgroundColor: string
     tension: number
@@ -28,7 +28,8 @@ export const useBurnupChart = () => {
     const statusLower = status.toLowerCase()
     return statusLower.includes('done') || 
            statusLower.includes('closed') || 
-           statusLower.includes('completed')
+           statusLower.includes('completed') ||
+           statusLower === 'done without dev'
   }
 
   const getArtifactPoints = (artifact: TableRow, meanPoints: number): number => {
@@ -68,9 +69,9 @@ export const useBurnupChart = () => {
   }
 
   const processBurnupData = (filteredRows: TableRow[], meanPoints: number): BurnupChartData => {
-    if (filteredRows.length === 0) {
+    // Validate input parameters
+    if (!filteredRows || filteredRows.length === 0 || typeof meanPoints !== 'number' || isNaN(meanPoints)) {
       return {
-        labels: [],
         datasets: []
       }
     }
@@ -80,9 +81,88 @@ export const useBurnupChart = () => {
       row.lastPointsModified !== 'loading' && row.lastPointsModified !== 'error'
     )
 
-    // Group artifacts by sprint
-    const sprintGroups = new Map<string, TableRow[]>()
+    // Get all sprint data with dates
+    const allSprintData = apiService.getAllSprintData()
     
+    // If no sprint data available, create a simple chart showing only estimation data
+    if (allSprintData.length === 0) {
+      console.warn('No sprint data available for date-based chart, showing estimation data only')
+      
+      // Still try to show estimation data if available
+      if (allDatesComputed) {
+        const estimationEvents: Array<{ date: Date, points: number }> = []
+        
+        filteredRows.forEach(artifact => {
+          if (artifact.lastPointsModified && typeof artifact.lastPointsModified === 'string') {
+            const estimationDate = new Date(artifact.lastPointsModified)
+            const points = getArtifactPoints(artifact, meanPoints)
+            estimationEvents.push({ date: estimationDate, points })
+          }
+        })
+        
+        if (estimationEvents.length > 0) {
+          estimationEvents.sort((a, b) => a.date.getTime() - b.date.getTime())
+          
+          let cumulativeEstimatedScope = 0
+          const estimatedScopeData: Array<{ x: Date, y: number }> = []
+          
+          estimationEvents.forEach(event => {
+            cumulativeEstimatedScope += event.points
+            estimatedScopeData.push({ x: event.date, y: cumulativeEstimatedScope })
+          })
+          
+          return {
+            datasets: [{
+              label: 'Estimated Scope (Actual)',
+              data: estimatedScopeData,
+              borderColor: '#FF9800', // Orange
+              backgroundColor: 'rgba(255, 152, 0, 0.1)',
+              tension: 0.1,
+              fill: false
+            }],
+            hasEstimatedScope: true
+          }
+        }
+      }
+      
+      return {
+        datasets: []
+      }
+    }
+
+    // Calculate date range for the chart
+    const allDates: Date[] = []
+    
+    // Add sprint end dates
+    allSprintData.forEach(sprint => {
+      if (sprint.endDate) {
+        allDates.push(new Date(sprint.endDate))
+      }
+    })
+    
+    // Add estimation dates  
+    filteredRows.forEach(row => {
+      if (row.lastPointsModified && typeof row.lastPointsModified === 'string') {
+        allDates.push(new Date(row.lastPointsModified))
+      }
+    })
+
+    // Sort dates to create timeline
+    allDates.sort((a, b) => a.getTime() - b.getTime())
+    
+    if (allDates.length === 0) {
+      return {
+        datasets: []
+      }
+    }
+
+    // Create data points for total scope and completed scope (using sprint end dates)
+    const totalScopeData: Array<{ x: Date, y: number }> = []
+    const completedScopeData: Array<{ x: Date, y: number }> = []
+    const estimatedScopeData: Array<{ x: Date, y: number }> = []
+
+    // Group artifacts by sprint for easier processing
+    const sprintGroups = new Map<string, TableRow[]>()
     filteredRows.forEach(row => {
       const sprint = row.sprint || 'No Sprint'
       if (!sprintGroups.has(sprint)) {
@@ -91,17 +171,18 @@ export const useBurnupChart = () => {
       sprintGroups.get(sprint)!.push(row)
     })
 
-    // Get sorted sprint names
-    const sprintNames = sortSprints(Array.from(sprintGroups.keys()))
-    
-    // Calculate cumulative data for each sprint
-    const sprintDataArray: SprintData[] = []
+    // Process each sprint's end date for total scope and completed scope
     let cumulativeTotalScope = 0
     let cumulativeCompletedScope = 0
-    let cumulativeEstimatedScope = 0
+    
+    // Sort sprints by end date
+    const sortedSprints = allSprintData
+      .filter(sprint => sprint.endDate && sprintGroups.has(sprint.title))
+      .sort((a, b) => new Date(a.endDate!).getTime() - new Date(b.endDate!).getTime())
 
-    sprintNames.forEach(sprintName => {
-      const artifacts = sprintGroups.get(sprintName) || []
+    sortedSprints.forEach(sprintData => {
+      const artifacts = sprintGroups.get(sprintData.title) || []
+      const sprintEndDate = new Date(sprintData.endDate!)
       
       // Calculate points for this sprint
       const sprintTotalScope = artifacts.reduce((sum, artifact) => {
@@ -115,39 +196,41 @@ export const useBurnupChart = () => {
         return sum
       }, 0)
       
-      // Calculate estimated scope: points estimated during this sprint period
-      // Only calculate if all dates are computed, otherwise use 0
-      const sprintEstimatedScope = allDatesComputed ? artifacts.reduce((sum, artifact) => {
-        // Only count points if they were estimated during this sprint period
-        if (artifact.lastPointsModified && typeof artifact.lastPointsModified === 'string') {
-          const estimationSprint = apiService.mapDateToSprint(artifact.lastPointsModified)
-          if (estimationSprint === sprintName) {
-            return sum + getArtifactPoints(artifact, meanPoints)
-          }
-        }
-        return sum
-      }, 0) : 0
-      
-      // Add to cumulative totals
       cumulativeTotalScope += sprintTotalScope
       cumulativeCompletedScope += sprintCompletedScope
-      cumulativeEstimatedScope += sprintEstimatedScope
       
-      sprintDataArray.push({
-        sprintName,
-        totalScope: cumulativeTotalScope,
-        estimatedScope: cumulativeEstimatedScope,
-        completedScope: cumulativeCompletedScope,
-        totalItems: artifacts.length,
-        completedItems: artifacts.filter(a => isDoneStatus(a.status)).length
-      })
+      totalScopeData.push({ x: sprintEndDate, y: cumulativeTotalScope })
+      completedScopeData.push({ x: sprintEndDate, y: cumulativeCompletedScope })
     })
 
-    // Build chart data
+    // Process estimated scope using actual estimation dates
+    if (allDatesComputed) {
+      // Collect all estimation events with their dates
+      const estimationEvents: Array<{ date: Date, points: number }> = []
+      
+      filteredRows.forEach(artifact => {
+        if (artifact.lastPointsModified && typeof artifact.lastPointsModified === 'string') {
+          const estimationDate = new Date(artifact.lastPointsModified)
+          const points = getArtifactPoints(artifact, meanPoints)
+          estimationEvents.push({ date: estimationDate, points })
+        }
+      })
+      
+      // Sort by date and create cumulative data
+      estimationEvents.sort((a, b) => a.date.getTime() - b.date.getTime())
+      
+      let cumulativeEstimatedScope = 0
+      estimationEvents.forEach(event => {
+        cumulativeEstimatedScope += event.points
+        estimatedScopeData.push({ x: event.date, y: cumulativeEstimatedScope })
+      })
+    }
+
+    // Build datasets
     const datasets = [
       {
         label: 'Total Scope (Ideal)',
-        data: sprintDataArray.map(sprint => sprint.totalScope),
+        data: totalScopeData,
         borderColor: '#1976D2', // Blue
         backgroundColor: 'rgba(25, 118, 210, 0.1)',
         tension: 0.1,
@@ -156,10 +239,10 @@ export const useBurnupChart = () => {
     ]
 
     // Only add estimated scope dataset if all dates are computed
-    if (allDatesComputed) {
+    if (allDatesComputed && estimatedScopeData.length > 0) {
       datasets.push({
         label: 'Estimated Scope (Actual)',
-        data: sprintDataArray.map(sprint => sprint.estimatedScope),
+        data: estimatedScopeData,
         borderColor: '#FF9800', // Orange
         backgroundColor: 'rgba(255, 152, 0, 0.1)',
         tension: 0.1,
@@ -168,19 +251,20 @@ export const useBurnupChart = () => {
     }
 
     // Always add completed dataset
-    datasets.push({
-      label: 'Completed',
-      data: sprintDataArray.map(sprint => sprint.completedScope),
-      borderColor: '#4CAF50', // Green
-      backgroundColor: 'rgba(76, 175, 80, 0.1)',
-      tension: 0.1,
-      fill: false
-    })
+    if (completedScopeData.length > 0) {
+      datasets.push({
+        label: 'Completed',
+        data: completedScopeData,
+        borderColor: '#4CAF50', // Green
+        backgroundColor: 'rgba(76, 175, 80, 0.1)',
+        tension: 0.1,
+        fill: false
+      })
+    }
 
     const chartData: BurnupChartData = {
-      labels: sprintNames,
       datasets,
-      hasEstimatedScope: allDatesComputed
+      hasEstimatedScope: allDatesComputed && estimatedScopeData.length > 0
     }
 
     return chartData
@@ -201,10 +285,12 @@ export const useBurnupChart = () => {
         },
         tooltip: {
           callbacks: {
-            title: (context: any) => {
-              return `Sprint: ${context[0].label}`
+            title: (context: unknown[]) => {
+              const firstContext = context[0] as { parsed: { x: number } }
+              const date = new Date(firstContext.parsed.x)
+              return `Date: ${date.toLocaleDateString()}`
             },
-            label: (context: any) => {
+            label: (context: { dataset: { label: string }, parsed: { y: number } }) => {
               return `${context.dataset.label}: ${context.parsed.y.toFixed(1)} pts`
             }
           }
@@ -212,9 +298,19 @@ export const useBurnupChart = () => {
       },
       scales: {
         x: {
+          type: 'time',
+          time: {
+            unit: 'day',
+            displayFormats: {
+              day: 'MMM dd',
+              week: 'MMM dd',
+              month: 'MMM yyyy'
+            },
+            tooltipFormat: 'PPP'
+          },
           title: {
             display: true,
-            text: 'Sprint'
+            text: 'Date'
           },
           grid: {
             display: true,

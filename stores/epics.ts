@@ -19,6 +19,7 @@ export const useEpicStore = defineStore('epics', () => {
   const isHydrated = ref(false)
 
   const epicIdsList = computed(() => {
+    if (!epicIds.value) return []
     return epicIds.value
       .split(',')
       .map(id => id.trim())

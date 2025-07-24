@@ -416,6 +416,12 @@ export const apiService = {
   mapDateToSprint(date: string): string | null {
     const targetDate = new Date(date)
     
+    // Check if we have any sprint data cached
+    if (sprintDataCache.size === 0) {
+      console.warn('No sprint data cached when trying to map date to sprint:', date)
+      return null
+    }
+    
     for (const sprintData of sprintDataCache.values()) {
       if (!sprintData.startDate || !sprintData.endDate) continue
       
@@ -426,6 +432,10 @@ export const apiService = {
         return sprintData.title
       }
     }
+    
+    // If no sprint found, log for debugging
+    console.debug(`Date ${date} doesn't fall within any known sprint. Available sprints:`, 
+      Array.from(sprintDataCache.values()).map(s => ({ title: s.title, start: s.startDate, end: s.endDate })))
     
     return null // Date doesn't fall within any known sprint
   },

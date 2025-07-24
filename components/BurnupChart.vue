@@ -19,7 +19,7 @@
             <p class="mt-2">Processing chart data...</p>
           </div>
           
-          <div v-else-if="chartData.labels.length === 0" class="text-center pa-8">
+          <div v-else-if="chartData.datasets.length === 0" class="text-center pa-8">
             <v-icon size="64" color="grey-lighten-2">mdi-chart-line-stacked</v-icon>
             <p class="text-h6 mt-2">No data available</p>
             <p class="text-body-2">No artifacts with sprints found to display in burnup chart.</p>
@@ -68,7 +68,7 @@
                 <v-card-text>
                   <div class="text-subtitle-2 mb-2">Chart Info</div>
                   <div class="text-body-2">
-                    <div>Total Sprints: {{ chartData.labels.length }}</div>
+                    <div>Data Points: {{ chartData.datasets.reduce((sum, dataset) => sum + dataset.data.length, 0) }}</div>
                     <div>Points Calculation: Uses mean story points ({{ meanPoints.toFixed(1) }} pts) for items without explicit points</div>
                     <div>Estimation Timeline: Based on actual dates when points were assigned/modified</div>
                     <div>Status: Items marked as "Done", "Closed", or "Completed" are considered finished</div>
@@ -84,12 +84,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, onBeforeUnmount } from 'vue'
 import { Line } from 'vue-chartjs'
 import {
   Chart as ChartJS,
   CategoryScale,
   LinearScale,
+  TimeScale,
   PointElement,
   LineElement,
   Title,
@@ -97,6 +98,7 @@ import {
   Legend,
   type ChartOptions
 } from 'chart.js'
+import 'chartjs-adapter-date-fns'
 import { useBurnupChart, type BurnupChartData } from '@/composables/useBurnupChart'
 import type { TableRow } from '@/composables/useStoriesTable'
 
@@ -104,6 +106,7 @@ import type { TableRow } from '@/composables/useStoriesTable'
 ChartJS.register(
   CategoryScale,
   LinearScale,
+  TimeScale,
   PointElement,
   LineElement,
   Title,
@@ -125,8 +128,8 @@ const { processBurnupData, getChartOptions } = useBurnupChart()
 // State
 const showChart = ref(true)
 const loading = ref(false)
+const isMounted = ref(true)
 const chartData = ref<BurnupChartData>({
-  labels: [],
   datasets: []
 })
 
@@ -135,38 +138,60 @@ const chartOptions = computed(() => getChartOptions() as ChartOptions<'line'>)
 
 // Process chart data when filtered rows change
 const processChartData = async () => {
+  // Prevent updates if component is unmounted
+  if (!isMounted.value) return
+  
   if (props.filteredRows.length === 0) {
-    chartData.value = {
-      labels: [],
-      datasets: []
+    if (isMounted.value) {
+      chartData.value = {
+        datasets: []
+      }
     }
     return
   }
 
-  loading.value = true
+  if (isMounted.value) {
+    loading.value = true
+  }
   
   try {
     // Add a small delay to show loading state
     await new Promise(resolve => setTimeout(resolve, 100))
     
-    chartData.value = processBurnupData(props.filteredRows, props.meanPoints)
+    // Check again if component is still mounted after async operation
+    if (!isMounted.value) return
+    
+    const newChartData = processBurnupData(props.filteredRows, props.meanPoints)
+    
+    if (isMounted.value) {
+      chartData.value = newChartData
+    }
   } catch (error) {
     console.error('Error processing chart data:', error)
-    chartData.value = {
-      labels: [],
-      datasets: []
+    if (isMounted.value) {
+      chartData.value = {
+        datasets: []
+      }
     }
   } finally {
-    loading.value = false
+    if (isMounted.value) {
+      loading.value = false
+    }
   }
 }
 
 // Watch for changes in filtered rows or mean points
-watch(
+const stopWatcher = watch(
   () => [props.filteredRows, props.meanPoints],
   processChartData,
   { immediate: true, deep: true }
 )
+
+// Cleanup on unmount
+onBeforeUnmount(() => {
+  isMounted.value = false
+  stopWatcher()
+})
 </script>
 
 <style scoped>

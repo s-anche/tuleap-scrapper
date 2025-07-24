@@ -22,6 +22,7 @@ Give project leads and developers a clean, real-time interface to:
 ## Development Commands
 
 ### Standard Development
+
 - `npm run dev` - Start development server with real Tuleap API (requires VPN)
 - `npm run build` - Type-check and build for production
 - `npm run type-check` - Run TypeScript type checking with vue-tsc
@@ -30,6 +31,7 @@ Give project leads and developers a clean, real-time interface to:
 - `npm run preview` - Preview production build locally
 
 ### Local Development with Mock API (No VPN Required)
+
 - `npm run mock:server` - Start Mockoon mock server only
 - `npm run dev:mock` - Start development with mock Tuleap API
 - `npm run mock:dev` - Start both mock server and dev server in parallel (recommended)
@@ -128,3 +130,12 @@ For local development without needing VPN access to the real Tuleap instance:
 - The project uses vue-tsc for TypeScript type checking instead of standard tsc
 - Vite dev tools are enabled for debugging
 - The build process runs type-check and build-only in parallel using npm-run-all2
+
+## Development Workflow
+
+- Always run in plan mode.
+- When validating a plan, write the plan in `.claude/tasks/TASK_NAME.md`.
+- the plan should be a detailed implementation plan and the reasoning behind them, as well as tasks broken down.
+- if the task require external knowledge or certain package, also research to gfet latest knowledge (Use Task tool for research)
+- while implementing, you should update the plan as you work.
+- After you complete tasks in the plan, you should update and append detailed descriptions of the changes you made, so following tasks can be easilyhand over to other ingineers.
