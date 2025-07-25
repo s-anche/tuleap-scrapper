@@ -32,9 +32,40 @@ export const useBurnupChart = () => {
            statusLower === 'done without dev'
   }
 
-  const getArtifactPoints = (artifact: TableRow, meanPoints: number): number => {
-    // Use actual points if available, otherwise use mean story points
-    return artifact.points ?? meanPoints
+  const isCanceledStatus = (status: string): boolean => {
+    const statusLower = status.toLowerCase()
+    return statusLower.includes('cancel') || 
+           statusLower.includes('cancelled') ||
+           statusLower.includes('reject') ||
+           statusLower.includes('rejected') ||
+           statusLower.includes('abandon') ||
+           statusLower.includes('abandoned') ||
+           statusLower.includes('dropped') ||
+           statusLower.includes('withdrawn')
+  }
+
+  const isActiveStatus = (status: string): boolean => {
+    return !isDoneStatus(status) && !isCanceledStatus(status)
+  }
+
+  const getArtifactPoints = (artifact: TableRow, meanPoints: number, includeUnsized: boolean = true): number => {
+    // If artifact has explicit points (including 0), use them
+    if (artifact.points !== null && artifact.points !== undefined) {
+      return artifact.points
+    }
+    
+    // For unsized items, behavior depends on includeUnsized flag
+    if (includeUnsized) {
+      // Use mean points for unsized items when includeUnsized is true
+      return meanPoints
+    } else {
+      // Exclude unsized items by returning 0 points
+      return 0
+    }
+  }
+
+  const filterActiveArtifacts = (artifacts: TableRow[]): TableRow[] => {
+    return artifacts.filter(artifact => !isCanceledStatus(artifact.status))
   }
 
   const sortSprints = (sprints: string[]): string[] => {
@@ -68,7 +99,15 @@ export const useBurnupChart = () => {
     return [...namedSprints, ...noSprint]
   }
 
-  const processBurnupData = (filteredRows: TableRow[], meanPoints: number): BurnupChartData => {
+  const processBurnupData = (
+    filteredRows: TableRow[], 
+    meanPoints: number, 
+    options: { 
+      includeCanceled?: boolean, 
+      includeUnsized?: boolean 
+    } = {}
+  ): BurnupChartData => {
+    const { includeCanceled = false, includeUnsized = true } = options
     // Validate input parameters
     if (!filteredRows || filteredRows.length === 0 || typeof meanPoints !== 'number' || isNaN(meanPoints)) {
       return {
@@ -76,8 +115,17 @@ export const useBurnupChart = () => {
       }
     }
 
+    // Filter out canceled items if not explicitly included
+    const activeRows = includeCanceled ? filteredRows : filterActiveArtifacts(filteredRows)
+    
+    if (activeRows.length === 0) {
+      return {
+        datasets: []
+      }
+    }
+
     // Check if all lastPointsModified dates are computed (not loading/error)
-    const allDatesComputed = filteredRows.every(row => 
+    const allDatesComputed = activeRows.every(row => 
       row.lastPointsModified !== 'loading' && row.lastPointsModified !== 'error'
     )
 
@@ -92,10 +140,10 @@ export const useBurnupChart = () => {
       if (allDatesComputed) {
         const estimationEvents: Array<{ date: Date, points: number }> = []
         
-        filteredRows.forEach(artifact => {
+        activeRows.forEach(artifact => {
           if (artifact.lastPointsModified && typeof artifact.lastPointsModified === 'string') {
             const estimationDate = new Date(artifact.lastPointsModified)
-            const points = getArtifactPoints(artifact, meanPoints)
+            const points = getArtifactPoints(artifact, meanPoints, includeUnsized)
             estimationEvents.push({ date: estimationDate, points })
           }
         })
@@ -141,7 +189,7 @@ export const useBurnupChart = () => {
     })
     
     // Add estimation dates  
-    filteredRows.forEach(row => {
+    activeRows.forEach(row => {
       if (row.lastPointsModified && typeof row.lastPointsModified === 'string') {
         allDates.push(new Date(row.lastPointsModified))
       }
@@ -156,24 +204,19 @@ export const useBurnupChart = () => {
       }
     }
 
-    // Create data points for total scope and completed scope (using sprint end dates)
-    const totalScopeData: Array<{ x: Date, y: number }> = []
+    // Create data points for completed scope (using sprint end dates)
     const completedScopeData: Array<{ x: Date, y: number }> = []
     const estimatedScopeData: Array<{ x: Date, y: number }> = []
 
     // Group artifacts by sprint for easier processing
     const sprintGroups = new Map<string, TableRow[]>()
-    filteredRows.forEach(row => {
+    activeRows.forEach(row => {
       const sprint = row.sprint || 'No Sprint'
       if (!sprintGroups.has(sprint)) {
         sprintGroups.set(sprint, [])
       }
       sprintGroups.get(sprint)!.push(row)
     })
-
-    // Process each sprint's end date for total scope and completed scope
-    let cumulativeTotalScope = 0
-    let cumulativeCompletedScope = 0
     
     // Sort sprints by end date
     const sortedSprints = allSprintData
@@ -181,26 +224,28 @@ export const useBurnupChart = () => {
       .sort((a, b) => new Date(a.endDate!).getTime() - new Date(b.endDate!).getTime())
 
     sortedSprints.forEach(sprintData => {
-      const artifacts = sprintGroups.get(sprintData.title) || []
       const sprintEndDate = new Date(sprintData.endDate!)
       
-      // Calculate points for this sprint
-      const sprintTotalScope = artifacts.reduce((sum, artifact) => {
-        return sum + getArtifactPoints(artifact, meanPoints)
-      }, 0)
+      // For completed scope: count ALL completed items up to this sprint end date
+      // (not just items from this specific sprint)
+      let completedScopeAtThisDate = 0
       
-      const sprintCompletedScope = artifacts.reduce((sum, artifact) => {
+      // Check all active rows to see which ones should be considered completed by this date
+      activeRows.forEach(artifact => {
         if (isDoneStatus(artifact.status)) {
-          return sum + getArtifactPoints(artifact, meanPoints)
+          // Get the sprint end date for this artifact's sprint
+          const artifactSprint = allSprintData.find(s => s.title === artifact.sprint)
+          if (artifactSprint && artifactSprint.endDate) {
+            const artifactSprintEndDate = new Date(artifactSprint.endDate)
+            // If this artifact's sprint ended on or before the current date, count it as completed
+            if (artifactSprintEndDate <= sprintEndDate) {
+              completedScopeAtThisDate += getArtifactPoints(artifact, meanPoints, includeUnsized)
+            }
+          }
         }
-        return sum
-      }, 0)
+      })
       
-      cumulativeTotalScope += sprintTotalScope
-      cumulativeCompletedScope += sprintCompletedScope
-      
-      totalScopeData.push({ x: sprintEndDate, y: cumulativeTotalScope })
-      completedScopeData.push({ x: sprintEndDate, y: cumulativeCompletedScope })
+      completedScopeData.push({ x: sprintEndDate, y: completedScopeAtThisDate })
     })
 
     // Process estimated scope using actual estimation dates
@@ -208,10 +253,10 @@ export const useBurnupChart = () => {
       // Collect all estimation events with their dates
       const estimationEvents: Array<{ date: Date, points: number }> = []
       
-      filteredRows.forEach(artifact => {
+      activeRows.forEach(artifact => {
         if (artifact.lastPointsModified && typeof artifact.lastPointsModified === 'string') {
           const estimationDate = new Date(artifact.lastPointsModified)
-          const points = getArtifactPoints(artifact, meanPoints)
+          const points = getArtifactPoints(artifact, meanPoints, includeUnsized)
           estimationEvents.push({ date: estimationDate, points })
         }
       })
@@ -227,16 +272,7 @@ export const useBurnupChart = () => {
     }
 
     // Build datasets
-    const datasets = [
-      {
-        label: 'Total Scope (Ideal)',
-        data: totalScopeData,
-        borderColor: '#1976D2', // Blue
-        backgroundColor: 'rgba(25, 118, 210, 0.1)',
-        tension: 0.1,
-        fill: false
-      }
-    ]
+    const datasets = []
 
     // Only add estimated scope dataset if all dates are computed
     if (allDatesComputed && estimatedScopeData.length > 0) {
@@ -345,6 +381,9 @@ export const useBurnupChart = () => {
     processBurnupData,
     getChartOptions,
     isDoneStatus,
+    isCanceledStatus,
+    isActiveStatus,
+    filterActiveArtifacts,
     getArtifactPoints,
     sortSprints
   }
