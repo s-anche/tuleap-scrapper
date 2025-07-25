@@ -145,7 +145,7 @@ import {
 } from 'chart.js'
 import 'chartjs-adapter-date-fns'
 import { useBurnupChart, type BurnupChartData } from '@/composables/useBurnupChart'
-import type { TableRow } from '@/composables/useStoriesTable'
+import type { TableRow } from '@/stores/storiesTable'
 
 // Register Chart.js components
 ChartJS.register(

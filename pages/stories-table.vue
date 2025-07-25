@@ -34,6 +34,18 @@
         </v-chip>
         
         <v-btn
+          v-if="epics.length > 0 && !isLoading"
+          @click="loadTableData"
+          color="primary"
+          variant="elevated"
+          size="small"
+          prepend-icon="mdi-refresh"
+          :disabled="tableLoading"
+        >
+          {{ tableRows.length > 0 ? 'Refresh' : 'Load' }} Stories & Tasks
+        </v-btn>
+        
+        <v-btn
           v-if="tableRows.length > 0"
           @click="copyToClipboard"
           color="primary"
@@ -75,6 +87,8 @@
               :items="statusOptions"
               variant="outlined"
               density="compact"
+              multiple
+              chips
               clearable
             />
           </v-col>
@@ -85,6 +99,20 @@
               :items="typeOptions"
               variant="outlined"
               density="compact"
+              multiple
+              chips
+              clearable
+            />
+          </v-col>
+          <v-col cols="12" md="6" lg="3">
+            <v-select
+              v-model="teamFilter"
+              label="Team"
+              :items="teamOptions"
+              variant="outlined"
+              density="compact"
+              multiple
+              chips
               clearable
             />
           </v-col>
@@ -95,6 +123,8 @@
               :items="epicOptions"
               variant="outlined"
               density="compact"
+              multiple
+              chips
               clearable
             />
           </v-col>
@@ -186,6 +216,16 @@
           <span v-else class="text-grey">—</span>
         </template>
 
+        <template v-slot:item.team="{ item }">
+          <v-chip v-if="item.team && item.team !== 'Unknown Team'" color="purple" variant="outlined" size="small">
+            {{ item.team }}
+          </v-chip>
+          <v-chip v-else-if="item.team === 'Unknown Team'" color="grey" variant="outlined" size="small">
+            {{ item.team }}
+          </v-chip>
+          <span v-else class="text-grey">—</span>
+        </template>
+
       </v-data-table>
     </v-card>
 
@@ -195,13 +235,42 @@
       <p class="text-h6 mt-4">Loading stories, tasks and changesets...</p>
     </v-card>
 
-    <!-- Empty State -->
+    <!-- No Epics State -->
+    <v-card v-else-if="epics.length === 0" class="text-center pa-12">
+      <v-icon size="64" color="grey-lighten-2">mdi-book-open-variant</v-icon>
+      <p class="text-h6 mt-2">No epics selected</p>
+      <p class="text-body-2">Please go to the home page and select epics to view their artifacts.</p>
+      <v-btn
+        to="/"
+        color="primary"
+        variant="outlined"
+        class="mt-4"
+        prepend-icon="mdi-home"
+      >
+        Go to Home
+      </v-btn>
+    </v-card>
+
+    <!-- Ready to Load State -->
     <v-card v-else class="text-center pa-12">
-      <v-icon size="64" color="grey-lighten-2">mdi-table-off</v-icon>
-      <p class="text-h6 mt-4">No stories or tasks found</p>
-      <p class="text-body-1">
-        Load some epics from the sidebar to see their stories and tasks here.
+      <v-icon size="64" color="primary-lighten-2">mdi-table-search</v-icon>
+      <p class="text-h6 mt-2">Ready to load artifacts</p>
+      <p class="text-body-2">Click the "Load Stories & Tasks" button above to fetch artifacts from the selected epics.</p>
+      <p class="text-body-2 mt-2">
+        <strong>{{ epics.length }}</strong> epic{{ epics.length > 1 ? 's' : '' }} selected: 
+        {{ epics.map(e => `#${e.id}`).join(', ') }}
       </p>
+      <v-btn
+        @click="loadTableData"
+        color="primary"
+        variant="elevated"
+        class="mt-4"
+        prepend-icon="mdi-refresh"
+        :loading="tableLoading"
+        size="large"
+      >
+        Load Stories & Tasks
+      </v-btn>
     </v-card>
   </div>
 </template>
@@ -209,8 +278,8 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
 import { useEpicStore } from '@/stores/epics'
+import { useStoriesTableStore, type TableRow } from '@/stores/storiesTable'
 import { storeToRefs } from 'pinia'
-import { useStoriesTable, type TableRow } from '@/composables/useStoriesTable'
 import BurnupChart from '@/components/BurnupChart.vue'
 
 // Set page meta for authentication
@@ -219,20 +288,23 @@ definePageMeta({
   title: 'Stories & Tasks',
 })
 
-// Store
+// Stores
 const epicStore = useEpicStore()
+const storiesTableStore = useStoriesTableStore()
 const { epics, loading } = storeToRefs(epicStore)
+const { tableRows, loading: tableLoading } = storeToRefs(storiesTableStore)
 
-// Composables
-const { flattenEpicTreeData } = useStoriesTable()
+// Hydrate stores on client
+if (process.client) {
+  storiesTableStore.hydrate()
+}
 
 // Table state
 const search = ref('')
-const statusFilter = ref('')
-const typeFilter = ref('')
-const epicFilter = ref('')
-const tableRows = ref<TableRow[]>([])
-const tableLoading = ref(false)
+const statusFilter = ref<string[]>([])
+const typeFilter = ref<string[]>([])
+const teamFilter = ref<string[]>([])
+const epicFilter = ref<string[]>([])
 
 // Table headers
 const headers = [
@@ -243,26 +315,33 @@ const headers = [
   { title: 'Points', value: 'points', sortable: true, width: '100px' },
   { title: 'Last Points Modified', value: 'lastPointsModified', sortable: true, width: '180px' },
   { title: 'Sprint', value: 'sprint', sortable: true, width: '150px' },
+  { title: 'Team', value: 'team', sortable: true, width: '180px' },
 ]
 
-// Watch for changes in epics and update table data
+// Manual loading function
+const loadTableData = async () => {
+  if (epics.value.length > 0) {
+    await storiesTableStore.loadTableData(epics.value)
+  }
+}
+
+// Check if we have cached data for current epics on mount
+const checkCachedData = () => {
+  if (epics.value.length > 0) {
+    const epicIdsKey = storiesTableStore.generateEpicIdsKey(epics.value)
+    if (storiesTableStore.currentEpicIdsKey === epicIdsKey && storiesTableStore.hasData) {
+      // We already have cached data for these epics, no need to load
+      return
+    }
+    // Try to load from localStorage cache
+    storiesTableStore.loadFromStorage(epicIdsKey)
+  }
+}
+
+// Watch for changes in epics to check for cached data
 watch(
   epics,
-  async (newEpics) => {
-    if (newEpics.length > 0) {
-      tableLoading.value = true
-      try {
-        tableRows.value = await flattenEpicTreeData(newEpics)
-        
-      } catch (error) {
-        console.error('Error flattening epic tree data:', error)
-      } finally {
-        tableLoading.value = false
-      }
-    } else {
-      tableRows.value = []
-    }
-  },
+  checkCachedData,
   { immediate: true },
 )
 
@@ -280,6 +359,14 @@ const typeOptions = computed(() => [
   { title: 'Task', value: 'task' },
   { title: 'Defect', value: 'defect' },
 ])
+
+const teamOptions = computed(() => {
+  const teams = [...new Set(tableRows.value.map((row) => row.team).filter(team => team))]
+  return teams.sort().map(team => ({
+    title: team,
+    value: team
+  }))
+})
 
 const epicOptions = computed(() => {
   const epicIds = [...new Set(tableRows.value.map((row) => row.epicId))]
@@ -305,19 +392,24 @@ const filteredRows = computed(() => {
     )
   }
 
-  // Apply status filter
-  if (statusFilter.value) {
-    filtered = filtered.filter((row) => row.status === statusFilter.value)
+  // Apply status filter (multi-select)
+  if (statusFilter.value.length > 0) {
+    filtered = filtered.filter((row) => statusFilter.value.includes(row.status))
   }
 
-  // Apply type filter
-  if (typeFilter.value) {
-    filtered = filtered.filter((row) => row.type === typeFilter.value)
+  // Apply type filter (multi-select)
+  if (typeFilter.value.length > 0) {
+    filtered = filtered.filter((row) => typeFilter.value.includes(row.type))
   }
 
-  // Apply epic filter
-  if (epicFilter.value) {
-    filtered = filtered.filter((row) => row.epicId.toString() === epicFilter.value)
+  // Apply team filter (multi-select)
+  if (teamFilter.value.length > 0) {
+    filtered = filtered.filter((row) => teamFilter.value.includes(row.team))
+  }
+
+  // Apply epic filter (multi-select)
+  if (epicFilter.value.length > 0) {
+    filtered = filtered.filter((row) => epicFilter.value.includes(row.epicId.toString()))
   }
 
   // Apply custom sorting: items without sprint first, then by sprint descending
@@ -398,7 +490,7 @@ const getStatusColor = (status: string) => {
 
 const copyToClipboard = async () => {
   try {
-    const headerRow = ['ID', 'Parent ID', 'Title', 'Status', 'Points', 'Last Points Modified', 'Sprint', 'Type', 'URL']
+    const headerRow = ['ID', 'Parent ID', 'Title', 'Status', 'Points', 'Last Points Modified', 'Sprint', 'Team', 'Type', 'URL']
     const dataRows = filteredRows.value.map((row) => [
       row.id,
       row.parentId || '',
@@ -407,6 +499,7 @@ const copyToClipboard = async () => {
       row.points || '',
       row.lastPointsModified ? new Date(row.lastPointsModified).toLocaleDateString() : 'Never',
       row.sprint || '',
+      row.team || '',
       row.type,
       row.htmlUrl,
     ])

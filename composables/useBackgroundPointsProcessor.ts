@@ -1,6 +1,6 @@
 import { ref, reactive, readonly } from 'vue'
 import { apiService } from '@/services/api'
-import type { TableRow } from './useStoriesTable'
+import type { TableRow } from '@/stores/storiesTable'
 
 interface ProcessingState {
   isEnabled: boolean

@@ -1,4 +1,4 @@
-import type { TableRow } from '@/composables/useStoriesTable'
+import type { TableRow } from '@/stores/storiesTable'
 import { apiService } from '@/services/api'
 
 export interface BurnupChartData {
